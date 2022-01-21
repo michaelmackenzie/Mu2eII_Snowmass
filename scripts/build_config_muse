@@ -1,0 +1,44 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# BUILD_BASE doesn't replace the SATELLITE_RELEASE, need both
+#------------------------------------------------------------------------------
+base=$MUSE_WORK_DIR/build
+echo build_config_muse: 1: $0 : PWD=$PWD
+
+pkg=mu2eii
+stn_dir=$MUSE_WORK_DIR/Stntuple
+pkg_dir=$MUSE_WORK_DIR/$pkg
+
+# pkg=Stntuple
+echo build_config_muse: package=$pkg
+
+list_of_subpackages="stat calc ana"
+#------------------------------------------------------------------------------
+# mu2eii and its subpackages
+#------------------------------------------------------------------------------
+if [ ! -d $base/include/$pkg ] ; then
+    echo pwd=$pwd ; creating $base/include/$pkg
+    mkdir -p $base/include/$pkg ;
+fi
+#------------------------------------------------------------------------------
+# make symbolic links local, as they are
+#------------------------------------------------------------------------------
+for d in $list_of_subpackages ; do
+    if [[ -e $base/include/$pkg ]] && [[ ! -e $base/include/$pkg/$d ]] ; then
+        echo `pwd`/$0 : creating symbolic link to $base/include/$pkg/$d
+        ln -s $pkg_dir/$d/$d $base/include/$pkg/$d
+    fi
+done
+#------------------------------------------------------------------------------
+# make sure $WORK_DIR/site_scons directory exists
+# SCons-related things: executed from Stntuple
+# execution in mu2eii
+#------------------------------------------------------------------------------
+if [ ! -d $MUSE_WORK_DIR/site_scons ] ; then mkdir $MUSE_WORK_DIR/site_scons ; fi
+cp -u $pkg_dir/scripts/mu2eii_site_init.py    $MUSE_WORK_DIR/site_scons/.
+cp -u $stn_dir/scripts/stntuple_helper.py     $MUSE_WORK_DIR/site_scons/.
+#------------------------------------------------------------------------------
+# .rootrc and rootlogon.C could be modified by the user, copy them just once
+#------------------------------------------------------------------------------
+if [ ! -f $MUSE_WORK_DIR/.rootrc     ] ; then cp $pkg_dir/scripts/.rootrc     $MUSE_WORK_DIR/. ; fi
+if [ ! -f $MUSE_WORK_DIR/rootlogon.C ] ; then cp $pkg_dir/scripts/rootlogon.C $MUSE_WORK_DIR/. ; fi

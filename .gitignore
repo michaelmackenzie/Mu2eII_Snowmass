@@ -1,0 +1,16 @@
+*~
+*pycache*
+#*
+.#*
+*\#
+#ignore images by default
+*.png
+*.jpg
+*.svg
+*.pdf
+*.gif
+*.pyc
+
+*.log
+*.save
+*.tmp

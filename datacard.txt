@@ -1,0 +1,25 @@
+# Example ModelBuilder datacard
+# Signal yield normalized to Rmue = 1e-17
+
+# Define each contribution
+source              signal      dio         cosmics     rpc
+class                 0          1            1          1
+# Standard classes: 0 = signal, >0 = background
+
+# Currently only one category is allowed
+category             main      main          main       main
+source              signal      dio         cosmics      rpc
+rate               1.76602   2.202949e-1  9.39716e-2  4.15179e-2
+
+# Systematic uncertainties
+sys lumi     lnN     0.1        0.1           -         0.1  // Muon capture measurement uncertainty
+sys dio_norm lnN      -         0.70          -          -   // Mostly momentum scale+resolution tail
+sys csm_norm lnN      -          -           0.2         -   // Cosmic flux normalization/time dependence
+sys rpc_norm lnN      -          -            -         0.29 // Pion/muon yield uncertainty
+
+# Multiplifying constants, currently not implemented
+# mod br_cap           0.609     -            -          -
+# mod npot class 1 1.1
+
+# Set variable parameters, currently not implemented
+# set range rpc 0 0.5
