@@ -15,7 +15,7 @@ public:
 // -----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
-  channel_rpc(const char* ChannelName, float ExtraSF = 1., int Mode = 0, int DatasetConfigCode = 0);
+  channel_rpc(const char* ChannelName, float ExtraSF = 1., int Mode = 0, int DatasetConfigCode = 0, int Verbose = 0);
 };
 }
 #endif

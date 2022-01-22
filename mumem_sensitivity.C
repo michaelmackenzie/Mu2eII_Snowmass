@@ -40,10 +40,12 @@ public:
   double  fPMax;
   double  fTMin;
   double  fTMax;
+  int     fVerbose;
+
   //-----------------------------------------------------------------------------
   // constructors and destructor
   //-----------------------------------------------------------------------------
-  mumem(int Mode = 1, int DatasetConfigCode = 0, const char* Name = "mu-e-", const char* Title = "mu- --> e- conversion");
+  mumem(int Mode = 1, int Verbose = 0, int DatasetConfigCode = 0, const char* Name = "mu-e-", const char* Title = "mu- --> e- conversion");
   //-----------------------------------------------------------------------------
   // other functions
   //-----------------------------------------------------------------------------
@@ -55,15 +57,14 @@ public:
 };
 
 // constructor
-mumem::mumem(int Mode, int DatasetConfigCode, const char* Name, const char* Title) : mu2eii::analysis(Name,Title) {
+mumem::mumem(int Mode, int Verbose, int DatasetConfigCode, const char* Name, const char* Title) : mu2eii::analysis(Name,Title) {
   fSFSignal = 1.; fSFCosmics = 1.;
-  init_channels(Mode,DatasetConfigCode) ;
+  fVerbose = Verbose;
   fPMin = 103.85;
   fPMax = 105.10;
   fTMin =  700;
   fTMax = 1700;
-
-  // plot_data_t::fgFiguresDir = ".";
+  init_channels(Mode,DatasetConfigCode) ;
 }
 
 //-----------------------------------------------------------------------------
@@ -85,29 +86,30 @@ int mumem::init_channels(int Mode, int DatasetConfigCode) {
   const bool isMu2eII = (Mode % 100) / 10 > 0;
   fSFCosmics = cnsts.cosmics_scale();
 
-  printf("%s: Effective N(POT) = %.3e (%.3e + %.3e)\n", __func__, npot_1b+npot_2b, npot_1b, npot_2b);
+  if(fVerbose >= 0)
+    printf("%s: Effective N(POT) = %.3e (%.3e + %.3e)\n", __func__, npot_1b+npot_2b, npot_1b, npot_2b);
 
   //-----------------------------------------------------------------------------
   // 1. CE signal. For CE, specify signal in units of acceptance ?
   //-----------------------------------------------------------------------------
   // Rmue comes independently
   float Rmue = (isMu2eII) ? 1.e-16 : 1.e-15;
-  mu2eii::channel* ce = new mu2eii::channel("CE",fSFSignal,Mode);
+  mu2eii::channel* ce = new mu2eii::channel("CE",fSFSignal,Mode,fVerbose);
   SetSignal(ce,Rmue);
   //-----------------------------------------------------------------------------
   // 2. cosmics: fit , NPOT numbers are not used
   //-----------------------------------------------------------------------------
-  mu2eii::channel* cosmics = new mu2eii::channel("Cosmics",fSFCosmics,Mode);
+  mu2eii::channel* cosmics = new mu2eii::channel("Cosmics",fSFCosmics,Mode,fVerbose);
   AddBgrChannel(cosmics);
   //-----------------------------------------------------------------------------
   // 3. DIO
   //-----------------------------------------------------------------------------
-  mu2eii::channel* dio = new mu2eii::channel("DIO",fSFSignal,Mode);
+  mu2eii::channel* dio = new mu2eii::channel("DIO",fSFSignal,Mode,fVerbose);
   AddBgrChannel(dio);
   //-----------------------------------------------------------------------------
   // 4. pbars
   //-----------------------------------------------------------------------------
-  mu2eii::channel* pbar = new mu2eii::channel("PbarTOT",fSFSignal*cnsts.pbar_scale(),Mode);
+  mu2eii::channel* pbar = new mu2eii::channel("PbarTOT",fSFSignal*cnsts.pbar_scale(),Mode,fVerbose);
   AddBgrChannel(pbar);
 
   //-----------------------------------------------------------------------------
@@ -115,11 +117,12 @@ int mumem::init_channels(int Mode, int DatasetConfigCode) {
   //-----------------------------------------------------------------------------
   int rpc_config_code = DatasetConfigCode % 10 ;   // the least significant digit
 
-  printf("rpc_config_code = %i\n",rpc_config_code);
+  if(fVerbose > 0)
+    printf("rpc_config_code = %i\n",rpc_config_code);
 
   mu2eii::channel* rpc(nullptr);
-  if (rpc_config_code == 0)  rpc = new mu2eii::channel_rpc("RPC",fSFSignal*cnsts.rpc_scale(),Mode,rpc_config_code);
-  if (rpc_config_code == 1)  rpc = new mu2eii::channel_rpc("RPC",fSFSignal*cnsts.rpc_scale(),Mode,rpc_config_code);
+  if (rpc_config_code == 0)  rpc = new mu2eii::channel_rpc("RPC",fSFSignal*cnsts.rpc_scale(),Mode,rpc_config_code,fVerbose);
+  if (rpc_config_code == 1)  rpc = new mu2eii::channel_rpc("RPC",fSFSignal*cnsts.rpc_scale(),Mode,rpc_config_code,fVerbose);
 
   AddBgrChannel(rpc);
 
@@ -128,7 +131,7 @@ int mumem::init_channels(int Mode, int DatasetConfigCode) {
   //-----------------------------------------------------------------------------
   printf("---------------------------------------------------------------\n");
   mu2eii::channel* rpc_oot(nullptr);
-  rpc_oot = new mu2eii::channel_rpc("RPC_OOT",fSFSignal,Mode,rpc_config_code);
+  rpc_oot = new mu2eii::channel_rpc("RPC_OOT",fSFSignal,Mode,rpc_config_code,fVerbose);
   return 0;
 }
 

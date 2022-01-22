@@ -46,21 +46,22 @@ namespace mu2eii {
   //-----------------------------------------------------------------------------
   // constructor that doesn't initialize the histograms
   //-----------------------------------------------------------------------------
-  channel::channel(const char* ChannelName, int Mode) : TNamed(ChannelName,ChannelName), _constants(Mode) {
+  channel::channel(const char* ChannelName, int Mode, int Verbose) : TNamed(ChannelName,ChannelName), _constants(Mode), fVerbose(Verbose) {
     fHist      = nullptr;
 
     kLumiSF_1B = _constants.npot_1b();                 // SU2020 1B-mode scale factor, see su2020/analysis/dio.org
     kLumiSF_2B = _constants.npot_2b();                 // SU2020 2B-mode scale factor, see su2020/analysis/dio.org
 
     const char* hist_dir = gEnv->GetValue("mu2e.HistDir","/projects/mu2e/hist");
-    fHistDir = Form("%s/su2020",hist_dir);
+    const char* project  = gEnv->GetValue("mu2e.HistProject","su2020");
+    fHistDir = Form("%s/%s",hist_dir, project);
 
     // printf("ChannelName, SF1B, SF2B: %-10s  %9.3e %9.3e ",ChannelName,kLumiSF_1B,kLumiSF_2B);
-  }
+  };
 
 
   //-----------------------------------------------------------------------------
-  channel::channel(const char* ChannelName, float ExtraSF, int Mode) : channel(ChannelName, Mode) {
+  channel::channel(const char* ChannelName, float ExtraSF, int Mode, int Verbose) : channel(ChannelName, Mode, Verbose) {
     // HistName: generic: "time", "mom", "time_vs_mom"
     // allow additional scaling of the histograms, by default, ExtraSF = 1
 
@@ -69,25 +70,24 @@ namespace mu2eii {
     const float TMin =  640.00;
     const float TMax = 1650.00;
 
-    const char* hist_dir = gEnv->GetValue("mu2e.HistDir","/projects/mu2e/hist");
-    fHistDir = Form("%s/su2020",hist_dir);
-
-    printf("ChannelName, SF1B, SF2B, ExtraSF: %-10s  %9.3e %9.3e %9.3e\n",ChannelName,kLumiSF_1B,kLumiSF_2B,ExtraSF);
+    if(fVerbose > 0)
+      printf("ChannelName, SF1B, SF2B, ExtraSF: %-10s  %9.3e %9.3e %9.3e\n",ChannelName,kLumiSF_1B,kLumiSF_2B,ExtraSF);
 
     const double NPOT_1B = _constants.npot_1b();
     const double NPOT_2B = _constants.npot_2b();
 
     TString channel_name = ChannelName;
 
-    if (channel_name == "DIO") {
+    if (channel_name == "DIO" && (Mode % 1000) / 100 == 0) { //SU2020 histogram
       const char* dsid    = "su2020.fele2s51b1";
       const char* ana_job = "su2020_track_ana.1011";
       double      ngen (1.e7), erange(10.);            // properties of the dataset
 
-      double sf1b = NPOT_1B*_constants.muon_stop_rate()*(1-_constants.muon_capture())*erange/ngen*ExtraSF;
-      double sf2b = NPOT_2B*_constants.muon_stop_rate()*(1-_constants.muon_capture())*erange/ngen*ExtraSF;
+      double sf1b = NPOT_1B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*erange/ngen*ExtraSF;
+      double sf2b = NPOT_2B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*erange/ngen*ExtraSF;
 
-      printf("  DIO : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
+      if(fVerbose > 0)
+        printf("  DIO : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2006/p_vs_time")->Clone("DIO_t_vs_p");
       double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
@@ -97,11 +97,41 @@ namespace mu2eii {
       fTimeVsMom->Add(h,sf2b);
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
 
-      printf("  DIO      : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      if(fVerbose > 0)
+        printf("  DIO      : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
 
       delete h;
     }
-    else if (channel_name == "CE") {
+    else if (channel_name == "DIO" && (Mode % 1000) / 100 == 1) { //Mu2e-II histogram
+      const char* dsid    = "mu2eiisnowmass.dio";
+      const char* ana_job = "trkanahist.1011";
+      double      ngen (1.e7), erange(104.97 - 100.), frac_tail(3.4456778e-13); // properties of the dataset
+      //frac_tail is the integral of the DIO LL spectrum on Al from 100 to 104.97 MeV
+
+      double sf1b = NPOT_1B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail*erange/ngen*ExtraSF;
+      double sf2b = NPOT_2B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail*erange/ngen*ExtraSF;
+
+      if(fVerbose > 0)
+        printf("  DIO : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
+
+      // fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2006/p_vs_time")->Clone("DIO_t_vs_p");
+      TFile* f = TFile::Open(Form("%s/%s.%s.hist", GetHistDir(), dsid, ana_job));
+      if(!f) throw 20;
+      fTimeVsMom = (TH2F*) f->Get("DIO/trk_100/p_vs_t0")->Clone("DIO_t_vs_p");
+      double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
+      fTimeVsMom->Scale(sf1b);
+      double sum2 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
+      TH2F* h = (TH2F*) f->Get("DIO/trk_100/p_vs_t0")->Clone("tmp"); //FIXME: Add two-batch DIO histogram
+      // TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2007/p_vs_time")->Clone("tmp");
+      fTimeVsMom->Add(h,sf2b);
+      double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
+
+      if(fVerbose > 0)
+        printf("  DIO      : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+
+      delete h;
+    }
+    else if (channel_name == "CE" && (Mode % 1000) / 100 == 0) { //SU2020 histogram
       const char* dsid    = "su2020.cele0s61b1";
       const char* ana_job = "su2020_track_ana.1011";
       double      ngen (1.e6);
@@ -109,7 +139,8 @@ namespace mu2eii {
       double sf1b = NPOT_1B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
       double sf2b = NPOT_2B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
 
-      printf("  CE : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
+      if(fVerbose > 0)
+        printf("  CE : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2004/p_vs_time")->Clone("CE_t_vs_p");
       double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
@@ -119,7 +150,35 @@ namespace mu2eii {
       fTimeVsMom->Add(h,sf2b);
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
 
-      printf("  CE       : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      if(fVerbose > 0)
+        printf("  CE       : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      delete h;
+    }
+    else if (channel_name == "CE" && (Mode % 1000) / 100 == 1) { //Mu2e-II histogram
+      const char* dsid    = "mu2eiisnowmass.ce";
+      const char* ana_job = "trkanahist.1011";
+      double      ngen (1.e6);
+
+      double sf1b = NPOT_1B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
+      double sf2b = NPOT_2B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
+
+      if(fVerbose > 0)
+        printf("  CE : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
+
+      // fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2004/p_vs_time")->Clone("CE_t_vs_p");
+      TFile* f = TFile::Open(Form("%s/%s.%s.hist", GetHistDir(), dsid, ana_job));
+      if(!f) throw 20;
+      fTimeVsMom = (TH2F*) f->Get("CE/trk_100/p_vs_t0")->Clone("CE_t_vs_p");
+      double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
+      fTimeVsMom->Scale(sf1b);
+      double sum2 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
+      TH2F* h = (TH2F*) f->Get("CE/trk_100/p_vs_t0")->Clone("tmp"); //FIXME: Add two-batch CE histogram
+      // TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2005/p_vs_time")->Clone("tmp");
+      fTimeVsMom->Add(h,sf2b);
+      double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
+
+      if(fVerbose > 0)
+        printf("  CE       : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
       delete h;
     }
     else if (channel_name == "PbarAnni") {
@@ -144,8 +203,10 @@ namespace mu2eii {
       fTimeVsMom->Add(h,sf2b);
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
 
-      printf("  PbarAnni : NPOT_1B, NPOT_2B, sf1b, sf2b = %12.5e %12.5e %12.5e %12.5e\n",NPOT_1B,NPOT_2B,sf1b,sf2b);
-      printf("  PbarAnni : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      if(fVerbose > 0) {
+        printf("  PbarAnni : NPOT_1B, NPOT_2B, sf1b, sf2b = %12.5e %12.5e %12.5e %12.5e\n",NPOT_1B,NPOT_2B,sf1b,sf2b);
+        printf("  PbarAnni : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      }
       delete h;
     }
     else if (channel_name == "PbarRPCe") {
@@ -159,7 +220,8 @@ namespace mu2eii {
       double sf1b = NPOT_1B*nsp_per_pot/ngen*br_rpc*ExtraSF;
       double sf2b = NPOT_2B*nsp_per_pot/ngen*br_rpc*ExtraSF*0.98;
 
-      printf("  PbarRPCe : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
+      if(fVerbose > 0)
+        printf("  PbarRPCe : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_PbarAna","trk_2000/p_vs_time")->Clone("PbarRPCe_t_vs_p");
       double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
@@ -168,7 +230,8 @@ namespace mu2eii {
       TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_PbarAna","trk_2000/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
-      printf("  PbarRPCe : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      if(fVerbose > 0)
+        printf("  PbarRPCe : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
       delete h;
     }
     else if (channel_name == "PbarRPCi") {
@@ -183,7 +246,8 @@ namespace mu2eii {
       double sf1b = NPOT_1B*nsp_per_pot/ngen*br_rpc*rho*ExtraSF;
       double sf2b = NPOT_2B*nsp_per_pot/ngen*br_rpc*rho*ExtraSF*0.98;
 
-      printf("  PbarRPCi : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
+      if(fVerbose > 0)
+        printf("  PbarRPCi : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_PbarAna","trk_2000/p_vs_time")->Clone("PbarRPCi_t_vs_p");
       double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
@@ -192,7 +256,8 @@ namespace mu2eii {
       TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_PbarAna","trk_2000/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
-      printf("  PbarRPCi : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
+      if(fVerbose > 0)
+        printf("  PbarRPCi : sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
 
       delete h;
     }
@@ -200,9 +265,10 @@ namespace mu2eii {
       //-----------------------------------------------------------------------------
       // sum of internal and external , just assume gPbarRPCe and gPbarRPCi are already initialized
       //-----------------------------------------------------------------------------
-      printf("\n");
-      channel pbar_rpci("PbarRPCi",ExtraSF,Mode);
-      channel pbar_rpce("PbarRPCe",ExtraSF,Mode);
+      if(fVerbose > 0)
+        printf("\n");
+      channel pbar_rpci("PbarRPCi",ExtraSF,Mode,fVerbose);
+      channel pbar_rpce("PbarRPCe",ExtraSF,Mode,fVerbose);
       fTimeVsMom = (TH2F*) pbar_rpci.fTimeVsMom->Clone("PbarRPC_t_vs_p");
       fTimeVsMom->Add(pbar_rpce.fTimeVsMom);
     }
@@ -210,9 +276,10 @@ namespace mu2eii {
       //-----------------------------------------------------------------------------
       // sum of internal and external , just assume gPbarRPCe and gPbarRPCi are already initialized
       //-----------------------------------------------------------------------------
-      printf("\n");
-      channel pbar_anni("PbarAnni",ExtraSF,Mode);
-      channel pbar_rpc ("PbarRPC" ,ExtraSF,Mode);
+      if(fVerbose > 0)
+        printf("\n");
+      channel pbar_anni("PbarAnni",ExtraSF,Mode,fVerbose);
+      channel pbar_rpc ("PbarRPC" ,ExtraSF,Mode,fVerbose);
       fTimeVsMom = (TH2F*) pbar_anni.fTimeVsMom->Clone("PbarTOT_t_vs_p");
       fTimeVsMom->Add(pbar_rpc.fTimeVsMom);
     }
@@ -234,7 +301,8 @@ namespace mu2eii {
       double ymin = fTimeVsMom->GetYaxis()->GetXmin();
       double biny = fTimeVsMom->GetYaxis()->GetBinWidth(1);
 
-      printf("  Cosmics: binx = %10.4f biny = %10.4f\n",binx,biny);
+      if(fVerbose > 0)
+        printf("  Cosmics: binx = %10.4f biny = %10.4f\n",binx,biny);
 
       int nbx = fTimeVsMom->GetNbinsX();
       int nby = fTimeVsMom->GetNbinsY();
@@ -254,7 +322,8 @@ namespace mu2eii {
       // for cosmics, determine only one number - normalized to the time...
       //----------------------------------------------------------------------------------------
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
-      printf("  Cosmics : BGR(total): %12.5e\n",sum3);
+      if(fVerbose > 0)
+        printf("  Cosmics : BGR(total): %12.5e\n",sum3);
     }
   }
 
@@ -275,7 +344,8 @@ namespace mu2eii {
 
     if (TMin >  tmin) iy1 = (TMin+1.e-6*bin - tmin)/bin + 1;
     if (TMax <= tmax) iy2 = (TMax-1.e-6*bin - tmin)/bin + 1;
-    printf("iy1, iy2 = %5i %5i \n",iy1,iy2);
+    if(fVerbose > 0)
+      printf("iy1, iy2 = %5i %5i \n",iy1,iy2);
 
     TH1D* htemp   = fTimeVsMom->ProjectionX("htemp",iy1,iy2);
 
@@ -301,13 +371,15 @@ namespace mu2eii {
 
     int ix1(0), ix2(-1); // defaults
 
-    printf ("PMin, PMax, pmin, pmax, bin = %10.3f  %10.3f  %10.3f  %10.3f %10.4f\n",
-            PMin, PMax, pmin, pmax,bin);
+    if(fVerbose > 0)
+      printf ("PMin, PMax, pmin, pmax, bin = %10.3f  %10.3f  %10.3f  %10.3f %10.4f\n",
+              PMin, PMax, pmin, pmax,bin);
 
     if (PMin >  pmin ) ix1 = (PMin+1.e-6*bin - pmin)/bin + 1;
     if (PMax <= pmax ) ix2 = (PMax-1.e-6*bin - pmin)/bin + 1;
 
-    printf("ix1, ix2 = %5i %5i \n",ix1,ix2);
+    if(fVerbose > 0)
+      printf("ix1, ix2 = %5i %5i \n",ix1,ix2);
 
     TH1D* htemp  = fTimeVsMom->ProjectionY("htemp",ix1,ix2);
     TString name = Form("h_%s_mom_hist",GetName());
@@ -338,8 +410,9 @@ namespace mu2eii {
 
     int ix1(0), ix2(-1), iy1(0), iy2(nbt); // defaults
 
-    printf ("PMin, PMax, pmin, pmax, binp = %10.3f  %10.3f  %10.3f  %10.3f %10.4f\n",
-            PMin, PMax, pmin, pmax,binp);
+    if(fVerbose > 0)
+      printf ("PMin, PMax, pmin, pmax, binp = %10.3f  %10.3f  %10.3f  %10.3f %10.4f\n",
+              PMin, PMax, pmin, pmax,binp);
 
     if (PMin > pmin) ix1 = (PMin+1.e-6*binp - pmin)/binp + 1;
     if (PMax < pmax) ix2 = (PMax-1.e-6*binp - pmin)/binp + 1;
@@ -347,8 +420,10 @@ namespace mu2eii {
     if (TMin > tmin) iy1 = (TMin+1.e-6*bint - tmin)/bint + 1;
     if (TMax < tmax) iy2 = (TMax-1.e-6*bint - tmin)/bint + 1;
 
-    printf("ix1, ix2 = %5i %5i \n",ix1,ix2);
-    printf("iy1, iy2 = %5i %5i \n",iy1,iy2);
+    if(fVerbose > 0) {
+      printf("ix1, ix2 = %5i %5i \n",ix1,ix2);
+      printf("iy1, iy2 = %5i %5i \n",iy1,iy2);
+    }
 
     TH1D* htemp  = fTimeVsMom->ProjectionY("htemp",ix1,ix2);
     TString name = Form("h_%s_time_integral_hist",GetName());
@@ -396,8 +471,9 @@ namespace mu2eii {
 
     int ix1(0), ix2(-1), iy1(0), iy2(nbt); // defaults
 
-    printf ("PMin, PMax, pmin, pmax, binp = %10.3f  %10.3f  %10.3f  %10.3f %10.4f\n",
-            PMin, PMax, pmin, pmax,binp);
+    if(fVerbose > 0)
+      printf ("PMin, PMax, pmin, pmax, binp = %10.3f  %10.3f  %10.3f  %10.3f %10.4f\n",
+              PMin, PMax, pmin, pmax,binp);
 
     if (PMin > pmin) ix1 = (PMin+1.e-6*binp - pmin)/binp + 1;
     if (PMax < pmax) ix2 = (PMax-1.e-6*binp - pmin)/binp + 1;
@@ -405,8 +481,10 @@ namespace mu2eii {
     if (TMin > tmin) iy1 = (TMin+1.e-6*bint - tmin)/bint + 1;
     if (TMax < tmax) iy2 = (TMax-1.e-6*bint - tmin)/bint + 1;
 
-    printf("ix1, ix2 = %5i %5i \n",ix1,ix2);
-    printf("iy1, iy2 = %5i %5i \n",iy1,iy2);
+    if(fVerbose > 0) {
+      printf("ix1, ix2 = %5i %5i \n",ix1,ix2);
+      printf("iy1, iy2 = %5i %5i \n",iy1,iy2);
+    }
 
     TH1D*   htemp = fTimeVsMom->ProjectionX("htemp",iy1,iy2);
     TString name  = Form("h_%s_mom_integral_hist",GetName());

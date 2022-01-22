@@ -55,7 +55,10 @@ Stntuple.OracleServer          cdfofprd
 # Mu2E: 1. figures and histograms for TPlotNote
 #------------------------------------------------------------------------------
 mu2e.Figures                   /mu2e/data/users/$(USER)/figures/mu2eii
-mu2e.HistDir                   /mu2e/data/projects/mu2eii_snowmass/hist
+mu2e.HistDir                   /mu2e/data/users/mmackenz/mu2eii/snowmass/hist
+mu2e.HistProject               mu2eii
+# mu2e.HistDir                   /mu2e/data/projects/mu2eii_snowmass/hist
+# mu2e.HistDir                   /mu2e/data/projects/su2020/hist
 mu2e.TrkQual.HistDir           /grid/fermiapp/mu2e/users/murat/hist/mu2e/v5_7_0
 mu2e.TrkQual.Dsid              e11s5731
 #------------------------------------------------------------------------------

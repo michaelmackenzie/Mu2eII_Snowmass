@@ -4,6 +4,7 @@
 #include "TNamed.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TFile.h"
 #include "mu2eii/stat/stat/constants.hh"
 
 namespace mu2eii {
@@ -18,11 +19,12 @@ public:
   TH1F*  fHist;
   TString fHistDir;
   constants _constants;
+  int fVerbose;
 // -----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
-  channel(const char* ChannelName, int Mode = 0);
-  channel(const char* ChannelName, float ExtraSF, int Mode = 0);
+  channel(const char* ChannelName, int Mode = 0, int fVerbose = 0);
+  channel(const char* ChannelName, float ExtraSF, int Mode = 0, int fVerbose = 0);
 
   double GetIntegral(float PMin = -1, float PMax=1.e6, float TMin = -1., float TMax = 1.e6);
 
