@@ -9,7 +9,7 @@ source /cvmfs/mu2e.opensciencegrid.org/setupmu2e-art.sh
 cd /mu2e/app/users/${USER}/
 mkdir mu2eii
 cd mu2eii
-git clone git@github.com:Mu2e/Offline.git
+git clone --single-branch --branch Mu2eII_SM21 git@github.com:Mu2e/Offline.git
 git clone git@github.com:Mu2e/TrkAna.git
 git clone git@github.com:michaelmackenzie/Mu2eII_Snowmass.git mu2eii
 # Some Stntuple classes currently have issues due to Offline advancing, use a version patched for now
