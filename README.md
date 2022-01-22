@@ -31,7 +31,8 @@ root.exe -q -b mu2eii/scripts/process_trkana.C
 ## Optimizing the signal window
 
 Currently this runs using the SU2020 histograms with the code written by Pasha and imported from Mu2e/su2020, with the code
-imported in the `stat` package.
+imported in the `stat` package. DIO and CE histograms can be partially imported from the Mu2e-II TrkAna histogramming by
+using a Mode bit of 100.
 
 This evaluates the mean discovery R for scans in the track p vs t space. The histogram directory is taken from
 the .rootrc file, where these should be migrated from /mu2e/data/projects/su2020/hist/ to /mu2e/data/projects/mu2eii_snowmass/hist/.
@@ -41,6 +42,8 @@ root.exe mu2eii/mumem_sensitivity.C
 root> mumem ana(13); //See stat/constants.cc to find the Mode options
 root> ana.scan_pmin(104.1, 104.9, 680, 1700, 6);
 root> ana.scan_tmin(104.0, 104.9, 750, 1700, 10);
+root> mumem ana_2(113); //Use the Mu2e-II DIO/CE histograms
+root> ana_2.scan_pmin(104.5, 105., 680, 1650, 15);
 ```
 
 ## Evaluating the median expected limit and discovery
