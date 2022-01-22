@@ -146,13 +146,13 @@ int mumem::scan_pmin(double PMin, double PMax, double TMin, double TMax, int nst
   int npt(50);
   double s[npt], msign[npt];
 
-  double qbgr[100];
+  double qbgr[100], qerr[100];
 
   int nbgr = GetNBgrChannels();
 
   double pmax = PMax;
 
-  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s Total        Signal         s5          SES         Rmue\n",
+  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s    Total +- Sigma           Signal         s5          SES         Rmue\n",
          GetBgrChannel(0)->GetName(),
          GetBgrChannel(1)->GetName(),
          GetBgrChannel(2)->GetName(),
@@ -160,19 +160,22 @@ int mumem::scan_pmin(double PMin, double PMax, double TMin, double TMax, int nst
          );
 
   printf("--------------------------------------------------------------------------------");
-  printf("-------------------------------------------------------------------------------\n");
+  printf("---------------------------------------------------------------------------------------------------\n");
 
   for (int i=0; i<nsteps; i++) {
     double pmin = PMin-i*0.050;
     double sig = GetSigIntegral(pmin,pmax,TMin,TMax);
     double ses = GetSES        (pmin,pmax,TMin,TMax);
 
-    double bgr_tot = 0;
+    double bgr_tot(0.), bgr_err(0.);
     for (int ibgr=0; ibgr<nbgr; ibgr++) {
       mu2eii::channel* bgr = GetBgrChannel(ibgr);
-      qbgr[ibgr] = bgr->GetIntegral(pmin,pmax,TMin,TMax);
+      qbgr[ibgr] = bgr->GetIntegral(pmin,pmax,TMin,TMax, qerr[ibgr]);
       bgr_tot   += qbgr[ibgr] ;
+      bgr_err   += qerr[ibgr]*qerr[ibgr];
     }
+    bgr_err = (bgr_err < 0.) ? -1. : sqrt(bgr_err);
+
     //-----------------------------------------------------------------------------
     // for given bgr_tot, calculate the expected mean 5-sigma sensitivity
     // assume bgr_tot < 0.5, [1,11] covers the range in all cases
@@ -185,7 +188,7 @@ int mumem::scan_pmin(double PMin, double PMax, double TMin, double TMax, int nst
     for (int ibgr=0; ibgr<nbgr; ibgr++) {
       printf(" %12.5e", qbgr[ibgr]);
     }
-    printf(" %12.5e %12.5e %12.5e %12.5e %12.5e\n",bgr_tot,sig,s5,ses,s5*ses);
+    printf(" (%11.5e +- %11.5e) %12.5e %12.5e %12.5e %12.5e\n",bgr_tot,bgr_err,sig,s5,ses,s5*ses);
   }
   return 0;
 }
@@ -201,11 +204,11 @@ int mumem::scan_tmin(double PMin, double PMax, double TMin,double TMax, int nste
   int npt(50);
   double s[npt], msign[npt];
 
-  double qbgr[100];
+  double qbgr[100], qerr[100];
 
   int nbgr = GetNBgrChannels();
 
-  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s Total        Signal         s5          SES         Rmue \n",
+  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s    Total +- Sigma           Signal         s5          SES         Rmue\n",
          GetBgrChannel(0)->GetName(),
          GetBgrChannel(1)->GetName(),
          GetBgrChannel(2)->GetName(),
@@ -213,19 +216,22 @@ int mumem::scan_tmin(double PMin, double PMax, double TMin,double TMax, int nste
          );
 
   printf("---------------------------------------------------------------------------------");
-  printf("-------------------------------------------------------------------------------\n");
+  printf("---------------------------------------------------------------------------------------------------\n");
 
   for (int i=0; i<nsteps; i++) {
     double tmin = TMin-i*10;            // the bin width is 10 ns
     double sig = GetSigIntegral(PMin,PMax,tmin,TMax);
     double ses = GetSES        (PMin,PMax,tmin,TMax);
 
-    double bgr_tot = 0;
+    double bgr_tot(0.), bgr_err(0.);
     for (int ibgr=0; ibgr<nbgr; ibgr++) {
       mu2eii::channel* bgr = GetBgrChannel(ibgr);
-      qbgr[ibgr] = bgr->GetIntegral(PMin,PMax,tmin,TMax);
+      qbgr[ibgr] = bgr->GetIntegral(PMin,PMax,tmin,TMax, qerr[ibgr]);
       bgr_tot   += qbgr[ibgr] ;
+      bgr_err   += qerr[ibgr]*qerr[ibgr];
     }
+    bgr_err = (bgr_err < 0.) ? -1. : sqrt(bgr_err);
+
     //-----------------------------------------------------------------------------
     // for given bgr_tot, calculate the expected mean 5-sigma sensitivity
     // assume bgr_tot < 0.5, [1,11] covers the range in all cases
@@ -238,7 +244,7 @@ int mumem::scan_tmin(double PMin, double PMax, double TMin,double TMax, int nste
     for (int ibgr=0; ibgr<nbgr; ibgr++) {
       printf(" %12.5e", qbgr[ibgr]);
     }
-    printf(" %12.5e %12.5e %12.5e %12.5e %12.5e\n",bgr_tot,sig,s5,ses,s5*ses);
+    printf(" (%11.5e +- %11.5e) %12.5e %12.5e %12.5e %12.5e\n",bgr_tot,bgr_err,sig,s5,ses,s5*ses);
   }
   return 0;
 }
@@ -255,11 +261,11 @@ int mumem::scan_tmax(double PMin, double PMax, double TMin,double TMax, int nste
   int npt(50);
   double s[npt], msign[npt];
 
-  double qbgr[100];
+  double qbgr[100], qerr[100];
 
   int nbgr = GetNBgrChannels();
 
-  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s Total        Signal         s5          SES         Rmue \n",
+  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s    Total +- Sigma           Signal         s5          SES         Rmue\n",
          GetBgrChannel(0)->GetName(),
          GetBgrChannel(1)->GetName(),
          GetBgrChannel(2)->GetName(),
@@ -267,19 +273,22 @@ int mumem::scan_tmax(double PMin, double PMax, double TMin,double TMax, int nste
          );
 
   printf("---------------------------------------------------------------------------------");
-  printf("-------------------------------------------------------------------------------\n");
+  printf("---------------------------------------------------------------------------------------------------\n");
 
   for (int i=0; i<nsteps; i++) {
     double tmax = TMax-i*10;            // the bin width is 10 ns
     double sig = GetSigIntegral(PMin,PMax,TMin,tmax);
     double ses = GetSES        (PMin,PMax,TMin,tmax);
 
-    double bgr_tot = 0;
+    double bgr_tot(0.), bgr_err(0.);
     for (int ibgr=0; ibgr<nbgr; ibgr++) {
       mu2eii::channel* bgr = GetBgrChannel(ibgr);
-      qbgr[ibgr] = bgr->GetIntegral(PMin,PMax,TMin,tmax);
+      qbgr[ibgr] = bgr->GetIntegral(PMin,PMax,TMin,tmax, qerr[ibgr]);
       bgr_tot   += qbgr[ibgr] ;
+      bgr_err   += qerr[ibgr]*qerr[ibgr];
     }
+    bgr_err = (bgr_err < 0.) ? -1. : sqrt(bgr_err);
+
     //-----------------------------------------------------------------------------
     // for given bgr_tot, calculate the expected mean 5-sigma sensitivity
     // assume bgr_tot < 0.5, [1,11] covers the range in all cases
@@ -292,7 +301,7 @@ int mumem::scan_tmax(double PMin, double PMax, double TMin,double TMax, int nste
     for (int ibgr=0; ibgr<nbgr; ibgr++) {
       printf(" %12.5e", qbgr[ibgr]);
     }
-    printf(" %12.5e %12.5e %12.5e %12.5e %12.5e\n",bgr_tot,sig,s5,ses,s5*ses);
+    printf(" (%11.5e +- %11.5e) %12.5e %12.5e %12.5e %12.5e\n",bgr_tot,bgr_err,sig,s5,ses,s5*ses);
   }
   return 0;
 }

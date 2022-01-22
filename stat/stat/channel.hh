@@ -23,10 +23,11 @@ public:
 // -----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
-  channel(const char* ChannelName, int Mode = 0, int fVerbose = 0);
-  channel(const char* ChannelName, float ExtraSF, int Mode = 0, int fVerbose = 0);
+  channel(const char* ChannelName, int Mode = 0, int Verbose = 0);
+  channel(const char* ChannelName, float ExtraSF, int Mode = 0, int Verbose = 0);
 
   double GetIntegral(float PMin = -1, float PMax=1.e6, float TMin = -1., float TMax = 1.e6);
+  double GetIntegral(float PMin, float PMax, float TMin, float TMax, double& error);
 
   const char*  GetHistDir() { return fHistDir.Data(); }
   

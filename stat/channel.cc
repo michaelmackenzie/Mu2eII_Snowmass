@@ -511,6 +511,12 @@ namespace mu2eii {
 
   //-----------------------------------------------------------------------------
   double channel::GetIntegral(float PMin, float PMax, float TMin, float TMax) {
+    double error;
+    return GetIntegral(PMin, PMax, TMin, TMax, error);
+  }
+
+  //-----------------------------------------------------------------------------
+  double channel::GetIntegral(float PMin, float PMax, float TMin, float TMax, double& error) {
 
     if(!fTimeVsMom || !fTimeVsMom->GetXaxis()) {
       std::cout << __func__ << ": Undefined TimeVsMom histogram/axis!\n";
@@ -518,23 +524,24 @@ namespace mu2eii {
     }
     TAxis* ax = fTimeVsMom->GetXaxis();
     TAxis* ay = fTimeVsMom->GetYaxis();
+    return fTimeVsMom->IntegralAndError(ax->FindBin(PMin), ax->FindBin(PMax), ay->FindBin(TMin), ay->FindBin(TMax), error);
 
-    int nbp   = ax->GetNbins();
-    int nbt   = ay->GetNbins();
+    // int nbp   = ax->GetNbins();
+    // int nbt   = ay->GetNbins();
 
-    float sw  = 0;
+    // float sw  = 0;
 
-    for (int ix=0; ix<nbp; ix++) {
-      float p = ax->GetBinCenter(ix);
-      if ((p < PMin) or (p > PMax))   continue;
-      for (int iy=0; iy<nbt; iy++) {
-        float t = ay->GetBinCenter(iy);
-        if ((t < TMin) or (t > TMax))   continue;
-        float w = fTimeVsMom->GetBinContent(ix,iy);
-        sw += w;
-      }
-    }
+    // for (int ix=0; ix<nbp; ix++) {
+    //   float p = ax->GetBinCenter(ix);
+    //   if ((p < PMin) or (p > PMax))   continue;
+    //   for (int iy=0; iy<nbt; iy++) {
+    //     float t = ay->GetBinCenter(iy);
+    //     if ((t < TMin) or (t > TMax))   continue;
+    //     float w = fTimeVsMom->GetBinContent(ix,iy);
+    //     sw += w;
+    //   }
+    // }
 
-    return sw;
+    // return sw;
   }
 };
