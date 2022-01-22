@@ -17,7 +17,9 @@ int process_trkana(int nentries = -1) {
     cout << "Processing dataset " << dataset.Data() << endl;
     // tree->Print();
     TrkAnaHist analyzer(dataset.Data(), dataset.Data());
-    analyzer.Analyze(tree, Form("%s_Trig_TrkAnaHist.hist", dataset.Data()), nentries);
+    TString outname = dataset; outname.ToLower();
+    outname = Form("mu2eiisnowmass.%s.trkanahist.1011.hist", outname.Data());
+    analyzer.Analyze(tree, outname.Data(), nentries);
     delete tree;
     file->Close();
   }
