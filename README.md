@@ -38,7 +38,7 @@ This evaluates the mean discovery R for scans in the track p vs t space. The his
 the .rootrc file, where these should be migrated from /mu2e/data/projects/su2020/hist/ to /mu2e/data/projects/mu2eii_snowmass/hist/.
 This path can be updated to a new histogram path if needed.
 ```
-root.exe mu2eii/mumem_sensitivity.C
+root.exe mu2eii/scripts/mumem_sensitivity.C
 root> mumem ana(13); //See stat/constants.cc to find the Mode options
 root> ana.scan_pmin(104.1, 104.9, 680, 1700, 6);
 root> ana.scan_tmin(104.0, 104.9, 750, 1700, 10);
@@ -56,11 +56,11 @@ where each uncertainty is either 100% or 0% correlated with the other sources.
 
 Original script based model implementation:
 ```
-root.exe -q -b mu2eii/Mu2eII_model.C
+root.exe -q -b mu2eii/scripts/Mu2eII_model.C
 ```
 
 Datacard based model implementation (using the datacard `mu2eii/datacard.txt` with estimates using SU2020 histograms and Mu2e-II parameters):
 ```
-root.exe -q -b mu2eii/model_builder.C
+root.exe -q -b mu2eii/scripts/model_builder.C
 ```
 
