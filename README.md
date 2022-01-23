@@ -59,7 +59,7 @@ Original script based model implementation:
 root.exe -q -b mu2eii/scripts/Mu2eII_model.C
 ```
 
-Datacard based model implementation (using the datacard `mu2eii/datacard.txt` with estimates using SU2020 histograms and Mu2e-II parameters):
+Datacard based model implementation (using the datacard `mu2eii/scripts/datacard.txt` with estimates using SU2020 histograms and Mu2e-II parameters):
 ```
 root.exe -q -b mu2eii/scripts/model_builder.C
 ```
