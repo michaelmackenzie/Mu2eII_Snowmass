@@ -25,7 +25,7 @@ Histogramming is implemented using an object that takes in a TrkAna tree and wri
 of the event/track parameters with different event/track selections.
 
 ```
-root.exe -q -b mu2eii/scripts/process_trkana.C
+root.exe -q -b mu2eii/ana/scripts/process_trkana.C
 ```
 
 ## Optimizing the signal window
