@@ -238,19 +238,21 @@ namespace mu2eii {
 
     for(int i = 0; i < 20; ++i) tp.fTrackID[i] = 0;
     tp.fTrackID[0] += (1 << 0)*!(fabs(tp.fD0) < 100.); //D0 consistent with the stopping target
-    tp.fTrackID[0] += (1 << 1)*!(tp.fECluster > 10.); //has a cluster
+    tp.fTrackID[0] += (1 << 1)*!(tp.fECluster > 10. && tp.fEOverP > 0. && tp.fEOverP < 1.05); //has a cluster with reasonable E/P
     tp.fTrackID[0] += (1 << 2)*!(0.5 < tp.fTanDip && tp.fTanDip < 1.); //reject cosmic backgrounds/beam electrons
     tp.fTrackID[0] += (1 << 3)*!(tp.fNHits >= 20); //enough hits to reconstruct the helix well
     tp.fTrackID[0] += (1 << 4)*!(tp.fRMax < 680.); //avoid interactions with tracker edge
     tp.fTrackID[0] += (1 << 5)*!(tp.fT0Err < 0.9); //ignore poor fits, especially inconsistent with cluster timing
     if(fEvaluateMVAs) {
       tp.fTrackID[0] += (1 << 6)*!(tp.fTrkQual > fTrkQualMVA->CutValue()); //apply the ANN track quality
+      tp.fTrackID[0] += (1 << 9)*!(tp.fPIDScore > 0.5); //passes PID selection
     } else {
       tp.fTrackID[0] += (1 << 6)*!(tp.fTrkQual > 0.8); //apply the ANN track quality
+      // FIXME: Investigate low PID efficiency with default score
+      // tp.fTrackID[0] += (1 << 9)*!(tp.fPIDScore > 0.); //passes PID selection
     }
     tp.fTrackID[0] += (1 << 7)*!(tp.fT0 < 1650.); //apply the upper limit time cut
     tp.fTrackID[0] += (1 << 8)*!(tp.fP > 100.); //must be above the DIO generation minimum energy
-    tp.fTrackID[0] += (1 << 9)*!(tp.fPIDScore > 0.5); //passes PID selection
   }
 
   int TrkAnaHist::Analyze(TTree* tree, const char* fileout, int nevents) {

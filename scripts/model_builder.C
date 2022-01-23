@@ -1,6 +1,6 @@
 using namespace FCSys;
 
-int model_builder(const char* file = "mu2eii/datacard.txt") {
+int model_builder(const char* file = "mu2eii/datacard.txt", bool print = false) {
   cout << "- Using file " << file << endl;
   ModelBuilder builder("builder", "builder");
   builder.SetVerbose(1);
@@ -46,11 +46,13 @@ int model_builder(const char* file = "mu2eii/datacard.txt") {
   printf("** For a median of %i, minimum R_mue is: %.3e **\n",
          ndisc, mu_disc);
 
-  //Generating a nominal signal model:
-  model->spectate_ = true;
-  signal_mu.val_ = 1.;
-  model->GeneratePDF(rnd);
-  model->PrintSpectators("model_figures");
+  if(print) {
+    //Generating a nominal signal model:
+    model->spectate_ = true;
+    signal_mu.val_ = 1.;
+    model->GeneratePDF(rnd);
+    model->PrintSpectators("model_figures");
+  }
 
   return status;
 }
