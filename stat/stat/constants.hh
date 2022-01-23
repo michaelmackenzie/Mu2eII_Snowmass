@@ -8,7 +8,7 @@ namespace mu2eii {
   class constants {
   public:
     constants();
-    constants(int Mode);
+    constants(int Mode, int isMu2eIIDataset = 0);
     ~constants() {}
 
     double muon_capture()   { return _muon_capture  ;}

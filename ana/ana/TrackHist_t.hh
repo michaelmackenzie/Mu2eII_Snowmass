@@ -16,11 +16,33 @@ struct TrackHist_t {
   TH1F* hRMax;
   TH1F* hTDip;
   TH1F* hNHits;
+  TH1F* hNActiveHits;
+  TH1F* hNActiveFraction;
+  TH1F* hNDoublets;
+  TH1F* hNActiveDoublets;
+  TH1F* hNActDoubletFrac;
+  TH1F* hNHitsAmbZero;
+  TH1F* hNHitsAmbZeroFrac;
+  TH1F* hNMat;
+  TH1F* hNActiveMat;
+  TH1F* hNActiveMatFrac;
   TH1F* hChiSq;
   TH1F* hChiSqR;
-  TH1F* hEoverP;
+  TH1F* fLogFitCon;
   TH1F* hECluster;
+  TH1F* hEoverP;
+  TH1F* hNCrystals;
+  TH1F* hSeedFrac;
+  TH1F* hTchDt;
+  TH1F* hTchDz;
+  TH1F* hTchDr;
+  TH1F* hPath;
+
   TH1F* hTrkQual;
+  TH1F* hPIDScore;
+
+  TH1F* hNPOT;
+
   TH1F* hGenEnergy;
   TH1F* hGenCode;
 };

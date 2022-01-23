@@ -11,10 +11,31 @@ struct TrackPar_t {
   double fRMax;
   double fTanDip;
   int    fNHits;
+  int    fNActiveHits;
+  double fNActiveFraction;
+  int    fNDoublets;
+  int    fNActiveDoublets;
+  int    fNHitsAmbZero;
+  int    fNMat;
+  int    fNActiveMat;
+  double fFitCons;
   double fChiSq;
   int    fNDoF;
   double fECluster;
+  double fEOverP;
   double fTrkQual;
+  double fPIDScore;
+  double fDefaultTrkQual;
+
+  int    fNPOT;
+
+  //PID variables
+  int    fNCrystals;
+  double fSeedFr;
+  double fTchDt;
+  double fTchDz;
+  double fTchDr;
+  double fPath;
 
   double fGenEnergy;
   double fGenCosTh;

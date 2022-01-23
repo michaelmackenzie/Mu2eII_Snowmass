@@ -93,7 +93,7 @@ int mumem::init_channels(int Mode, int DatasetConfigCode) {
   // 1. CE signal. For CE, specify signal in units of acceptance ?
   //-----------------------------------------------------------------------------
   // Rmue comes independently
-  float Rmue = (isMu2eII) ? 1.e-16 : 1.e-15;
+  const float Rmue = (isMu2eII) ? 1.e-17 : 1.e-15;
   mu2eii::channel* ce = new mu2eii::channel("CE",fSFSignal,Mode,fVerbose);
   SetSignal(ce,Rmue);
   //-----------------------------------------------------------------------------

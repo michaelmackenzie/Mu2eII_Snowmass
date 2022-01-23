@@ -46,17 +46,19 @@ namespace mu2eii {
   //-----------------------------------------------------------------------------
   // constructor that doesn't initialize the histograms
   //-----------------------------------------------------------------------------
-  channel::channel(const char* ChannelName, int Mode, int Verbose) : TNamed(ChannelName,ChannelName), _constants(Mode), fVerbose(Verbose) {
+  channel::channel(const char* ChannelName, int Mode, int Verbose) : TNamed(ChannelName,ChannelName),
+                                                                     fVerbose(Verbose) {
+    const std::string name = ChannelName;
+    const int isMu2eIIDataset = (name == "DIO" || name == "CE") * (Mode % 1000) / 100;
+    _constants = constants(Mode, isMu2eIIDataset);
     fHist      = nullptr;
 
-    kLumiSF_1B = _constants.npot_1b();                 // SU2020 1B-mode scale factor, see su2020/analysis/dio.org
-    kLumiSF_2B = _constants.npot_2b();                 // SU2020 2B-mode scale factor, see su2020/analysis/dio.org
+    kLumiSF_1B = _constants.npot_1b();
+    kLumiSF_2B = _constants.npot_2b();
 
     const char* hist_dir = gEnv->GetValue("mu2e.HistDir","/projects/mu2e/hist");
     const char* project  = gEnv->GetValue("mu2e.HistProject","su2020");
     fHistDir = Form("%s/%s",hist_dir, project);
-
-    // printf("ChannelName, SF1B, SF2B: %-10s  %9.3e %9.3e ",ChannelName,kLumiSF_1B,kLumiSF_2B);
   };
 
 
@@ -524,6 +526,11 @@ namespace mu2eii {
     }
     TAxis* ax = fTimeVsMom->GetXaxis();
     TAxis* ay = fTimeVsMom->GetYaxis();
+    //push the bounds to ensure they're within the correct bin
+    PMin += 1.e-3;
+    PMax -= 1.e-3;
+    TMin += 1.e-3;
+    TMax -= 1.e-3;
     return fTimeVsMom->IntegralAndError(ax->FindBin(PMin), ax->FindBin(PMax), ay->FindBin(TMin), ay->FindBin(TMax), error);
 
     // int nbp   = ax->GetNbins();

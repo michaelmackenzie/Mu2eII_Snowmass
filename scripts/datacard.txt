@@ -1,3 +1,4 @@
+# -*- mode: tcl -*-
 # Example ModelBuilder datacard
 # Signal yield normalized to Rmue = 1e-17
 

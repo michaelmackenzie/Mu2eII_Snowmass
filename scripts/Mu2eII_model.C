@@ -1,5 +1,3 @@
-// #include "Functions.C"
-
 using namespace FCSys;
 
 TRandom3* rnd_ = new TRandom3(90);

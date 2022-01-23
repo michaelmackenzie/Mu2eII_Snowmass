@@ -1,4 +1,5 @@
 TString fTreeDir = "/mu2e/data/projects/mu2eii_snowmass/";
+int fEvaluateMVAs = 0; //SU2020 TrkQual MVA currently gives worse resolution, possibly due to DAR training applied to PAR tracks
 
 using namespace mu2eii;
 
@@ -17,6 +18,7 @@ int process_trkana(int nentries = -1) {
     cout << "Processing dataset " << dataset.Data() << endl;
     // tree->Print();
     TrkAnaHist analyzer(dataset.Data(), dataset.Data());
+    analyzer.fEvaluateMVAs = fEvaluateMVAs;
     TString outname = dataset; outname.ToLower();
     outname = Form("mu2eiisnowmass.%s.trkanahist.1011.hist", outname.Data());
     analyzer.Analyze(tree, outname.Data(), nentries);
