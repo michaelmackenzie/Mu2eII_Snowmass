@@ -10,6 +10,29 @@
 namespace mu2eii {
 
   //-----------------------------------------------------------------------------
+  // free function -- functional parameterization of the 2D cosmic background for Mu2e-II
+  //-----------------------------------------------------------------------------
+  double f_mu2eii_bgr_cosmics(double* X, double* P) {
+    //-----------------------------------------------------------------------------
+    // to begin with, assume cosmics uniform
+    // missing scale factor to CORSIKA - set to 1, add a 5% uncertainty
+    // assume P = X[0] ; T = X[1]
+    //-----------------------------------------------------------------------------
+    // const float p        = X[0];
+    const float t        = X[1];
+    float rho_per_mev    = 0.25 / (105.1 - 103.85);
+    // account for T>1650... - correction on the tail "eats up" 2.4%,
+    // renormalize the integral
+    if (t > 1650) rho_per_mev = rho_per_mev*(1.-(t-1650.)/40.)*1.024;
+    if (t > 1690) rho_per_mev = 0;
+
+    const float time_window    = (1650. - 640.); //width of the time window used to make the initial estimate
+    const float rho_per_mev_ns = rho_per_mev/time_window; //density per MeV/c per ns
+
+    return rho_per_mev_ns;
+  }
+
+  //-----------------------------------------------------------------------------
   // free function -- functional parameterization of the 2D cosmic background
   //-----------------------------------------------------------------------------
   double f_bgr_cosmics(double* X, double* P) {
@@ -36,9 +59,11 @@ namespace mu2eii {
   //-----------------------------------------------------------------------------
   // free function -- plot the 2D cosmic background using the functional parameterization
   //-----------------------------------------------------------------------------
-  void plot_bgr_cosmics(float pmin = 100., float pmax = 110., float tmin = 500., float tmax = 1700.) {
+  void plot_bgr_cosmics(float pmin = 100., float pmax = 110., float tmin = 500., float tmax = 1700., bool useMu2eII = false) {
 
-    TF2* bgr_cosmics_2D = new TF2("bgr_cosmics_2D",f_bgr_cosmics,pmin, pmax, tmin, tmax);
+    TF2* bgr_cosmics_2D;
+    if(useMu2eII) bgr_cosmics_2D = new TF2("bgr_cosmics_2D",f_mu2eii_bgr_cosmics,pmin, pmax, tmin, tmax);
+    else          bgr_cosmics_2D = new TF2("bgr_cosmics_2D",f_bgr_cosmics,pmin, pmax, tmin, tmax);
 
     bgr_cosmics_2D->Draw();
   }
@@ -315,7 +340,8 @@ namespace mu2eii {
           //-----------------------------------------------------------------------------
           // f_bgr_cosmics returns normalized background
           //-----------------------------------------------------------------------------
-          double bgr = f_bgr_cosmics(x,p)*binx*biny*ExtraSF;
+          double bgr = ((Mode % 1000) / 100 == 1) ? f_mu2eii_bgr_cosmics(x,p) : f_bgr_cosmics(x,p);
+          bgr *= binx*biny*ExtraSF;
           fTimeVsMom->SetBinContent(ix,iy,bgr);
           fTimeVsMom->SetBinError  (ix,iy,bgr*0.1);
         }

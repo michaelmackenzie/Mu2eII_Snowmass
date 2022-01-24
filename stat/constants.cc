@@ -35,7 +35,7 @@ namespace mu2eii {
         _npot_1b = 0.;
         _npot_2b = 4.4e22;
       }
-      _cosmics_scale = 3.;
+      _cosmics_scale = 1.; //Mu2e-II era scaling is from switching 2D density functions for cosmics
       _pbar_scale = 0.;
       _extinction = 1.e-11;
     }

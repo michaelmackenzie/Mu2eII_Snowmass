@@ -1,6 +1,6 @@
 using namespace FCSys;
 
-int model_builder(const char* file = "mu2eii/datacard.txt", bool print = false) {
+int model_builder(const char* file = "mu2eii/scripts/datacard.txt", bool print = false) {
   cout << "- Using file " << file << endl;
   ModelBuilder builder("builder", "builder");
   builder.SetVerbose(1);

@@ -23,6 +23,11 @@ namespace mu2eii {
                               "su2020.rpce1s61b0.su2020_rpc_ana.1010.wo_3_cuts.hist",
                               "su2020.rpci1s61b0.su2020_rpc_ana.1010.wo_3_cuts.hist" };
 
+    const float PMin =  103.60;
+    const float PMax =  104.90;
+    const float TMin =  640.00;
+    const float TMax = 1650.00;
+
     // allow additional scaling of the histograms, by default, ExtraSF = 1
 
     TString channel_name = ChannelName;
@@ -59,9 +64,9 @@ namespace mu2eii {
         printf("RPCe : sf1b, sf2b, dsid = %12.5e %12.5e %s\n",sf1b,sf2b,dsid[0]);
 
       fTimeVsMom  = (TH2F*) gh2(Form("%s/%s",GetHistDir(),dsid[0]),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("RPCe_t_vs_p");
-      double sum1 = GetIntegral(103.85,105.1,700,1700);
+      double sum1 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       fTimeVsMom->Scale(sf1b);
-      double sum2 = GetIntegral(103.85,105.1,700,1700);
+      double sum2 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       //-----------------------------------------------------------------------------
       // for RPC in-time datasets, because of the limited statistics, the luminosity
       // reweighing produces a biased (underestimated) answer
@@ -72,7 +77,7 @@ namespace mu2eii {
       TH2F* h     = (TH2F*) gh2(Form("%s/%s",GetHistDir(),dsid[0]),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("tmp");
 
       fTimeVsMom->Add(h,sf2b);
-      double sum3 = GetIntegral(103.85,105.1,700,1700);
+      double sum3 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       if(fVerbose > 0)
         printf("sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
 
@@ -99,12 +104,12 @@ namespace mu2eii {
         printf("RPCi : sf1b, sf2b,dsid = %12.5e %12.5e %s\n",sf1b,sf2b,dsid[1]);
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s",GetHistDir(),dsid[1]),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("RPCi_t_vs_p");
-      double sum1 = GetIntegral(103.85,105.1,700,1700);
+      double sum1 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       fTimeVsMom->Scale(sf1b);
-      double sum2 = GetIntegral(103.85,105.1,700,1700);
+      double sum2 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       TH2F* h    = (TH2F*) gh2(Form("%s/%s",GetHistDir(),dsid[1]),"su2020_RPCAna","trk_2005/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
-      double sum3 = GetIntegral(103.85,105.1,700,1700);
+      double sum3 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       if(fVerbose > 0)
         printf("sw(signal), BGR(one-batch), BGR(2-batch), BGR(total): %12.5e %12.5e %12.5e %12.5e\n",sum1,sum2,sum3-sum2,sum3);
 
@@ -116,8 +121,8 @@ namespace mu2eii {
       //-----------------------------------------------------------------------------
       if(fVerbose > 0)
         printf("\n");
-      channel_rpc rpce("RPCe",ExtraSF,Mode,DatasetConfigMode);
-      channel_rpc rpci("RPCi",ExtraSF,Mode,DatasetConfigMode);
+      channel_rpc rpce("RPCe",ExtraSF,Mode,DatasetConfigMode,fVerbose);
+      channel_rpc rpci("RPCi",ExtraSF,Mode,DatasetConfigMode,fVerbose);
 
       fTimeVsMom = (TH2F*) rpci.fTimeVsMom->Clone("RPC_t_vs_p");
       fTimeVsMom->Add(rpce.fTimeVsMom);
@@ -141,12 +146,12 @@ namespace mu2eii {
       double sf2b = NPOT_2B*(nstops/npot_gen)*(1./ngen_ph)*ext_fact*br_rpc*ExtraSF*0.98; // additional efficiency scale factor
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("RPCe_OOT_t_vs_p");
-      double sum1 = GetIntegral(103.85,105.1,700,1700);
+      double sum1 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       fTimeVsMom->Scale(sf1b);
-      double sum2 = GetIntegral(103.85,105.1,700,1700);
+      double sum2 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
-      double sum3 = GetIntegral(103.85,105.1,700,1700);
+      double sum3 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
 
       if(fVerbose > 0) {
         printf("RPCe_OOT : NPOT_1B, NPOT_2B, sf1b, sf2b = %12.5e %12.5e %12.5e %12.5e\n",NPOT_1B,NPOT_2B,sf1b,sf2b);
@@ -174,12 +179,12 @@ namespace mu2eii {
       double sf2b = NPOT_2B*(nstops/npot_gen)*(1./ngen_ph)*ext_fact*br_rpc*rho*ExtraSF*0.98; // additional efficiency scale factor
 
       fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("RPCi_OOT_t_vs_p");
-      double sum1 = GetIntegral(103.85,105.1,700,1700);
+      double sum1 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       fTimeVsMom->Scale(sf1b);
-      double sum2 = GetIntegral(103.85,105.1,700,1700);
+      double sum2 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_RPCAna","trk_2004/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
-      double sum3 = GetIntegral(103.85,105.1,700,1700);
+      double sum3 =  GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
 
       if(fVerbose > 0) {
         printf("RPCi_OOT : NPOT_1B, NPOT_2B, sf1b, sf2b = %12.5e %12.5e %12.5e %12.5e\n",NPOT_1B,NPOT_2B,sf1b,sf2b);
@@ -193,8 +198,8 @@ namespace mu2eii {
       //-----------------------------------------------------------------------------
       if(fVerbose > 0)
         printf("\n");
-      channel_rpc rpce_oot("RPCe_OOT",ExtraSF,Mode,DatasetConfigMode);
-      channel_rpc rpci_oot("RPCi_OOT",ExtraSF,Mode,DatasetConfigMode);
+      channel_rpc rpce_oot("RPCe_OOT",ExtraSF,Mode,DatasetConfigMode,fVerbose);
+      channel_rpc rpci_oot("RPCi_OOT",ExtraSF,Mode,DatasetConfigMode,fVerbose);
 
       fTimeVsMom = (TH2F*) rpci_oot.fTimeVsMom->Clone("RPC_t_vs_p");
       fTimeVsMom->Add(rpce_oot.fTimeVsMom);
