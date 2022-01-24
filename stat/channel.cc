@@ -107,11 +107,11 @@ namespace mu2eii {
     else if (channel_name == "DIO" && (Mode % 1000) / 100 == 1) { //Mu2e-II histogram
       const char* dsid    = "mu2eiisnowmass.dio";
       const char* ana_job = "trkanahist.1011";
-      double      ngen (1.e7), erange(104.97 - 100.), frac_tail(3.4456778e-13); // properties of the dataset
+      double      ngen (1.e7), /*erange(104.97 - 100.),*/ frac_tail(3.4456778e-13); // properties of the dataset
       //frac_tail is the integral of the DIO LL spectrum on Al from 100 to 104.97 MeV
 
-      double sf1b = NPOT_1B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail*erange/ngen*ExtraSF;
-      double sf2b = NPOT_2B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail*erange/ngen*ExtraSF;
+      double sf1b = NPOT_1B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail/ngen*ExtraSF;
+      double sf2b = NPOT_2B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail/ngen*ExtraSF;
 
       if(fVerbose > 0)
         printf("  DIO : sf1b, sf2b = %12.5e %12.5e\n",sf1b,sf2b);
