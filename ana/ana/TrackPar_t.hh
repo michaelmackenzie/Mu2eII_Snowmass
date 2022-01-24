@@ -38,6 +38,7 @@ struct TrackPar_t {
   double fPath;
 
   double fGenEnergy;
+  double fGenP;
   double fGenCosTh;
   int    fGenCode;
   double fEventWeight;

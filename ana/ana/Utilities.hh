@@ -2,7 +2,7 @@
 #define MU2EII_UTILITIES
 
 #include <cmath>
-
+#include "TH1.h"
 
 namespace mu2eii {
   class Util {
@@ -33,6 +33,16 @@ namespace mu2eii {
 
 
       return w;
+    }
+
+    //Get FWHM of a TH1
+    static double th1_fwhm(TH1* h) {
+      if(!h) return -1.;
+      const double max_val = h->GetMaximum();
+      const int bin1 = h->FindFirstBinAbove(max_val/2.);
+      const int bin2 = h->FindLastBinAbove(max_val/2.);
+      const double width = h->GetBinCenter(bin2) - h->GetBinCenter(bin1);
+      return width;
     }
   };
 }

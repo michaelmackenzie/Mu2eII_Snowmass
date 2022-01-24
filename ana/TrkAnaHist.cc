@@ -63,6 +63,7 @@ namespace mu2eii {
     Hist.hPvsT0     = new TH2F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
     Hist.hPFront    = new TH1F("pfront", "Track P(Front MC)", 1000, 0, 200);
     Hist.hDpf       = new TH1F("dpf", "Track P - Track P(Front MC)", 200, -10, 10);
+    Hist.hDpGen     = new TH1F("dpgen", "Track P - Gen P(MC)", 200, -10, 10);
     Hist.hPvsPFront = new TH2F("p_vs_front", "Track P vs P(Front MC)", 200, 50, 150, 200, 50, 150);
     Hist.hPErr      = new TH1F("p_err", "Track P uncertainty", 100, 0, 5);
     Hist.hT0Err     = new TH1F("t0_err", "Track T0 uncertainty", 100, 0, 10);
@@ -107,6 +108,7 @@ namespace mu2eii {
     Hist.hPvsT0     ->Fill(tp.fP, tp.fT0 , weight);
     Hist.hPFront    ->Fill(tp.fPFront , weight);
     Hist.hDpf       ->Fill(tp.fP - tp.fPFront , weight);
+    Hist.hDpGen     ->Fill(tp.fP - tp.fGenP , weight);
     Hist.hPvsPFront ->Fill(tp.fP, tp.fPFront , weight);
     Hist.hPErr      ->Fill(tp.fPErr , weight);
     Hist.hT0Err     ->Fill(tp.fT0Err , weight);
@@ -178,6 +180,8 @@ namespace mu2eii {
     tp.fRMax   = fabs(tp.fD0 + 2./fTrkFitInfo._fitpar._om);
     tp.fGenEnergy = fSimInfo._mom;
     tp.fGenCode   = fSimInfo._gen;
+    const static double me = 0.51099895; //electron mass, assuming the generated particle was an electron, could use the PDG ID to get the correct particle mass
+    tp.fGenP     = (tp.fGenEnergy > me) ? sqrt(tp.fGenEnergy*tp.fGenEnergy - me*me) : 0.;
     tp.fECluster = (fTrkCaloHitInfo._did < 0) ? 0. : fTrkCaloHitInfo._edep;
     tp.fDefaultTrkQual = fRecoQualInfo._qualsAndCalibs[2];
 
