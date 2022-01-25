@@ -18,6 +18,7 @@ namespace mu2eii {
     double cosmics_scale()  { return _cosmics_scale ;}
     double pbar_scale()     { return _pbar_scale    ;}
     double rpc_scale()      { return _rpc_scale     ;}
+    double rpc_oot_scale()  { return _rpc_oot_scale ;}
     double extinction()     { return _extinction    ;}
 
     double _muon_capture  ;
@@ -27,6 +28,7 @@ namespace mu2eii {
     double _cosmics_scale ;
     double _pbar_scale    ;
     double _rpc_scale     ;
+    double _rpc_oot_scale ;
     double _extinction    ;
   };
 }

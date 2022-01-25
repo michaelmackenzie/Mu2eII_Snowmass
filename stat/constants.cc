@@ -6,7 +6,7 @@ namespace mu2eii {
 
   constants::constants() : _muon_capture(0.609), _muon_stop_rate(1.59e-3),
                            _npot_1b(2.86e19), _npot_2b(9.03e18), _cosmics_scale(1.),
-                           _pbar_scale(1.), _rpc_scale(1.), _extinction(1.e-10) {
+                           _pbar_scale(1.), _rpc_scale(1.), _rpc_oot_scale(1.),_extinction(1.e-10) {
   }
   constants::constants(int Mode, int isMu2eIIDataset) : constants() {
     float eff_ur_1b     (0.994);
@@ -23,6 +23,7 @@ namespace mu2eii {
     if(mu2eIIMode) { //Mu2e-II parameters
       _muon_stop_rate = 8.9e-5;
       _rpc_scale = (9.6e-5)/(2.1e-3); //change in the pion stopping rate, ignoring arrival time changes
+      _rpc_oot_scale = (9.6e-5)/(2.1e-3); //change in the pion stopping rate, should be independent of in time vs out-of-time
       if(mu2eIIMode == 1 || mu2eIIMode == 3) { //use two-batch mode parameters
         _npot_1b = 0.;
         _npot_2b = 4.4e22;

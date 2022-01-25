@@ -127,11 +127,15 @@ int mumem::init_channels(int Mode, int DatasetConfigCode) {
   AddBgrChannel(rpc);
 
   //-----------------------------------------------------------------------------
-  // 6. RPC out-of-time: create channels, but don't add
+  // 6. RPC out-of-time: create channels, but don't add except Mode bit 1000
   //-----------------------------------------------------------------------------
   printf("---------------------------------------------------------------\n");
   mu2eii::channel* rpc_oot(nullptr);
-  rpc_oot = new mu2eii::channel_rpc("RPC_OOT",fSFSignal,Mode,rpc_config_code,fVerbose);
+  rpc_oot = new mu2eii::channel_rpc("RPC_OOT",fSFSignal*cnsts.rpc_oot_scale(),Mode,rpc_config_code,fVerbose);
+
+  if((Mode % 10000) / 1000 == 1)
+    AddBgrChannel(rpc_oot);
+
   return 0;
 }
 
@@ -142,25 +146,23 @@ int mumem::scan_pmin(double PMin, double PMax, double TMin, double TMax, int nst
   TFeldmanCousinsA fc("mumem::Print",-1);
   fc.SetNExp(100000); // enough for defining 5
 
-  double smin(1.), smax(20.);  // range of tested signal values
-  int npt(50);
+  const double smin(1.), smax(20.);  // range of tested signal values
+  const int npt(500);
   double s[npt], msign[npt];
 
   double qbgr[100], qerr[100];
 
-  int nbgr = GetNBgrChannels();
+  const int nbgr = GetNBgrChannels();
 
   double pmax = PMax;
 
-  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s    Total +- Sigma           Signal         s5          SES         Rmue\n",
-         GetBgrChannel(0)->GetName(),
-         GetBgrChannel(1)->GetName(),
-         GetBgrChannel(2)->GetName(),
-         GetBgrChannel(3)->GetName()
-         );
+  printf("     pmin       pmax       tmin       tmax  ");
+  for(int ibkg = 0; ibkg < nbgr; ++ibkg) printf("   %-10s", GetBgrChannel(ibkg)->GetName());
+  printf("      Total  +-  Sigma          Signal         s5          SES         Rmue\n");
 
-  printf("--------------------------------------------------------------------------------");
-  printf("---------------------------------------------------------------------------------------------------\n");
+  printf("--------------------------------------------");
+  for(int ibkg = 0; ibkg < nbgr; ++ibkg) printf("-------------");
+  printf("----------------------------------------------------------------------------------\n");
 
   for (int i=0; i<nsteps; i++) {
     double pmin = PMin-i*0.050;
@@ -180,7 +182,7 @@ int mumem::scan_pmin(double PMin, double PMax, double TMin, double TMax, int nst
     // for given bgr_tot, calculate the expected mean 5-sigma sensitivity
     // assume bgr_tot < 0.5, [1,11] covers the range in all cases
     //-----------------------------------------------------------------------------
-    fc.DiscoveryProbMean(bgr_tot, smin, smax, 20, s, msign);
+    fc.DiscoveryProbMean(bgr_tot, smin, smax, npt, s, msign);
 
     double sigd(5.), s5;                    // signal coresponding to 1-sided "5-sigma"
     fc.SolveFor(sigd,s,msign,npt,&s5);
@@ -200,23 +202,21 @@ int mumem::scan_tmin(double PMin, double PMax, double TMin,double TMax, int nste
   TFeldmanCousinsA fc("mumem::Print",-1);
   fc.SetNExp(100000); // enough for defining 5
 
-  double smin(1.), smax(20.);  // range of tested signal values
-  int npt(50);
+  const double smin(1.), smax(20.);  // range of tested signal values
+  const int npt(500);
   double s[npt], msign[npt];
 
   double qbgr[100], qerr[100];
 
-  int nbgr = GetNBgrChannels();
+  const int nbgr = GetNBgrChannels();
 
-  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s    Total +- Sigma           Signal         s5          SES         Rmue\n",
-         GetBgrChannel(0)->GetName(),
-         GetBgrChannel(1)->GetName(),
-         GetBgrChannel(2)->GetName(),
-         GetBgrChannel(3)->GetName()
-         );
+  printf("     pmin       pmax       tmin       tmax  ");
+  for(int ibkg = 0; ibkg < nbgr; ++ibkg) printf("   %-10s", GetBgrChannel(ibkg)->GetName());
+  printf("      Total  +-  Sigma          Signal         s5          SES         Rmue\n");
 
-  printf("---------------------------------------------------------------------------------");
-  printf("---------------------------------------------------------------------------------------------------\n");
+  printf("--------------------------------------------");
+  for(int ibkg = 0; ibkg < nbgr; ++ibkg) printf("-------------");
+  printf("----------------------------------------------------------------------------------\n");
 
   for (int i=0; i<nsteps; i++) {
     double tmin = TMin-i*10;            // the bin width is 10 ns
@@ -257,23 +257,21 @@ int mumem::scan_tmax(double PMin, double PMax, double TMin,double TMax, int nste
   TFeldmanCousinsA fc("mumem::Print",-1);
   fc.SetNExp(100000); // enough for defining 5
 
-  double smin(1.), smax(20.);  // range of tested signal values
-  int npt(50);
+  const double smin(0.), smax(20.);  // range of tested signal values
+  const int npt(500);
   double s[npt], msign[npt];
 
   double qbgr[100], qerr[100];
 
-  int nbgr = GetNBgrChannels();
+  const int nbgr = GetNBgrChannels();
 
-  printf("      pmin       pmax       tmin       tmax    %-10s     %-10s %-10s      %-10s    Total +- Sigma           Signal         s5          SES         Rmue\n",
-         GetBgrChannel(0)->GetName(),
-         GetBgrChannel(1)->GetName(),
-         GetBgrChannel(2)->GetName(),
-         GetBgrChannel(3)->GetName()
-         );
+  printf("     pmin       pmax       tmin       tmax  ");
+  for(int ibkg = 0; ibkg < nbgr; ++ibkg) printf("   %-10s", GetBgrChannel(ibkg)->GetName());
+  printf("      Total  +-  Sigma          Signal         s5          SES         Rmue\n");
 
-  printf("---------------------------------------------------------------------------------");
-  printf("---------------------------------------------------------------------------------------------------\n");
+  printf("--------------------------------------------");
+  for(int ibkg = 0; ibkg < nbgr; ++ibkg) printf("-------------");
+  printf("----------------------------------------------------------------------------------\n");
 
   for (int i=0; i<nsteps; i++) {
     double tmax = TMax-i*10;            // the bin width is 10 ns
