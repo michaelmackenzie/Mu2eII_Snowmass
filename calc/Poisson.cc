@@ -69,7 +69,7 @@ namespace FCSys {
   TH1D* Poisson_t::GeneratePDF(TRandom3& rnd) {
     //sample the nuisance parameters to define a mean, then add a poisson PDF for this
     int nbins = nmax_;
-    TH1D* hpdf = new TH1D("hpdf", "PDF", nbins, 0., (double) nbins);
+    TH1D* hpdf = new TH1D("hpdf", "PDF", nbins, -0.5, nbins - 0.5);
     const int nattempts = ngen_;
     if(spectate_) InitSpectators();
     for(int attempt = 0; attempt < nattempts; ++attempt) {

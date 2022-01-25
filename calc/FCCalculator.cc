@@ -5,29 +5,44 @@ namespace FCSys {
   //Number of events needed to be seen to be >x sigma on the right tail
   int FCCalculator::NSigmaThreshold(TH1D* hPDF, double nsigma) {
     if(nsigma < 0.) return 0; //ignore this region
-    //for numerical reasons, consider 1 - p(nsigma) --> 0 instead of p(nsigma) --> 1
+    //p-value for the N sigma deviation
     const double psigma = ROOT::Math::gaussian_cdf(-nsigma);
     double p = 1.;
-    int nbins = hPDF->GetNbinsX();
-    int n = -1;
+    const int nbins = hPDF->GetNbinsX();
+    int bin = 0;
     if(verbose_ > 1) printf("%s: Printing threshold calculation:\n", __func__);
-    while(p > psigma) {
-      ++n;
-      p = hPDF->Integral(n + 1, nbins);
-      if(verbose_ > 1) printf(" n = %2i P(n' >= n) = %.3e\n", n, p);
-    }
-    return n;
+    //loop through bins until the right-side integral is <= the desired p-value
+    do { //ensure it enters the loop at least once
+      ++bin;
+      p = hPDF->Integral(bin, nbins);
+      if(verbose_ > 1) {
+        const double binc = hPDF->GetBinCenter(bin);
+        const int nevents = binc + 0.1; //ensure it rounds correctly
+        printf(" n = %2i P(n' >= n) = %.3e\n", nevents, p);
+      }
+    } while(p > psigma && bin <= nbins);
+
+    //get the N(events) value for the bin
+    const double binc = hPDF->GetBinCenter(bin);
+    //Two reasonable scenarios:
+    //Bin low edge = n --> bin center = n + 0.5 --> rounds down to n correctly
+    //Bin center = n --> ben center either rounds to n or n-1, depending on accuracy
+    //Adding 0.1 won't change this in any of the cases
+    const int nevents = binc + 0.1;
+    return nevents;
   }
 
   //Get the median of the distribution
   int FCCalculator::GetMedian(TH1D* hPDF) {
     double p = 0.;
-    int n = -1;
+    int bin = 0;
     while(p < 0.5) {
-      ++n;
-      p += hPDF->GetBinContent(n+1);
+      ++bin;
+      p += hPDF->GetBinContent(bin);
     }
-    return n;
+    const double binc = hPDF->GetBinCenter(bin);
+    const int nevents = binc + 0.1;
+    return nevents;
   }
 
   //Find the minimum value of the POI that has a median of n
@@ -48,8 +63,8 @@ namespace FCSys {
 
   //For a given PDF, construct the FC interval in N(observed)
   void FCCalculator::CalculateIndividualInterval(TH1D* hPDF, int& nmin, int& nmax) {
-    nmin = hPDF->GetNbinsX();
-    nmax = 0;
+    nmin = hPDF->GetBinCenter(hPDF->GetNbinsX()) + 0.1;
+    nmax = hPDF->GetBinCenter(1) + 0.1;
     double p = 0.;
     //mu_bkg for the denominator of the likelihood ratio ordering parameter
     const double mu = null_mu_;//hNull_->GetMean() - 0.5; //bins are centered at n + 0.5
@@ -62,17 +77,27 @@ namespace FCSys {
     std::set<int> ns;
     if(verbose_ > 2) printf("%s: Printing interval construction:\n", __func__);
     while(p < cl_) {
-      int nbest = -1;
-      double rbest = -1.;
-      for(int n = 0; n < hPDF->GetNbinsX(); ++n) {
-        if(ns.count(n)) continue;
-        double r = hPDF->GetBinContent(n+1) / ROOT::Math::poisson_pdf(n, std::max(mu, (double) n));
+      int nbest = -1; //N(events) for highest R
+      int bbest =  0; //Bin for highest R
+      double rbest = -1.; //Highest R
+      for(int bin = 1; bin <= hPDF->GetNbinsX(); ++bin) { //check each histogram bin
+        const double binc = hPDF->GetBinCenter(bin);
+        const int nevents = binc + 0.1;
+        if(ns.count(nevents)) continue; //skip if already added to the interval
+        //FIXME: could generate an array of PDFs for mu + mu_s = n for n = (int) mu - nmax to use for the denominator
+        const double r = hPDF->GetBinContent(bin) / ROOT::Math::poisson_pdf(nevents, std::max(mu, (double) nevents));
         if(r > rbest) {
           rbest = r;
-          nbest = n;
+          nbest = nevents;
+          bbest = bin;
         }
       }
-      p += hPDF->GetBinContent(nbest+1);
+      if(nbest < 0) {
+        printf("!!! Error: FCCalculator::%s: No next interval addition for the PDF (likely due to integral of PDF < 1)! p(current) = %.3e, p(target) = %.3e, nmin = %i, nmax = %i",
+               __func__, p, cl_, nmin, nmax);
+      }
+      //Add the highest R N(events) to the interval
+      p += hPDF->GetBinContent(bbest);
       nmin = std::min(nbest, nmin);
       nmax = std::max(nbest, nmax);
       ns.insert(nbest);
