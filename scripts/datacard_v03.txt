@@ -7,21 +7,20 @@
 # Optimized signal window is:
 #       pmin       pmax       tmin       tmax    Cosmics        DIO        PbarTOT         RPC           Total +- Sigma           Signal         s5          SES         Rmue
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#   104.000    104.900    690.000   1650.000  1.67667e-01  1.36084e-01  0.00000e+00  2.41812e-02 (3.27932e-01 +- 7.86814e-02)  2.19754e+00  6.37868e+00  4.55055e-18  2.90265e-17
+#    104.000    104.900    690.000   1650.000  9.39713e-02  1.36084e-01  0.00000e+00  2.41812e-02 (2.54236e-01 +- 7.86807e-02)  2.19754e+00  5.98061e+00  4.55055e-18  2.72151e-17
+# Applying a scale factor to increase the sensitivity
 ##############################################################################
 # Output of model_builder.C:
 # * Performing Feldman-Cousins calculation for median nseen = 0
-# ** For 0 seen, R_mue interval is: 0.000e+00 - 9.933e-01 **
-# * N(discovery) for NULL model = 9
-# ** For a median of 9, minimum R_mue is: 3.767e+00 **
+# ** For 0 seen, R_mue interval is: 0.000e+00 - 9.250e-01 **
+# * N(discovery) for NULL model = 10
+# ** For a median of 10, minimum R_mue is: 4.152e+00 **
 ##############################################################################
 # Without systematics:
 # * Performing Feldman-Cousins calculation for median nseen = 0
-# ** For 0 seen, R_mue interval is: 0.000e+00 - 9.592e-01 **
-# --> Compare to
-# (TFeldmanCousins(0.9)).CalculateUpperLimit(0, 0.327932)*4.55055e-18 = 9.60e-18
-# * N(discovery) for NULL model = 7
-# ** For a median of 7, minimum R_mue is: 2.886e+00 **
+# ** For 0 seen, R_mue interval is: 0.000e+00 - 8.939e-01 **
+# * N(discovery) for NULL model = 8
+# ** For a median of 8, minimum R_mue is: 3.275e+00 **
 ##############################################################################
 
 # Define each contribution
@@ -32,15 +31,15 @@ class                 0          1            1          1
 # Currently only one category is allowed
 category             main      main          main       main
 source              signal      dio         cosmics      rpc
-rate               2.19754   1.36084e-1   1.67667e-1  2.41812e-2
+rate               2.63705   1.63301e-1    1.127656e-1  2.901744e-1
 
 # Systematic uncertainties
-sys lumi     lnN     0.1        0.1           -         0.1  // Muon capture measurement uncertainty
-sys sig_norm lnN     0.11        -            -          -   // Momentum scale, 8% increase in -100 keV/c, 11% decrease in +100 keV/c (lower pMin decreases the uncertainty)
-sys dio_norm lnN      -         0.70          -          -   // Mostly momentum scale+resolution tail
-sys csm_norm lnN      -          -           0.2         -   // Cosmic flux normalization/time dependence
-sys rpc_norm lnN      -          -            -         0.29 // Pion/muon yield uncertainty
-sys dio_stat lnN      -         0.58          -          -   // Statistical uncertainty on the DIO background
+# sys lumi     lnN     0.1        0.1           -         0.1  // Muon capture measurement uncertainty
+# sys sig_norm lnN     0.11        -            -          -   // Momentum scale, 8% increase in -100 keV/c, 11% decrease in +100 keV/c (lower pMin decreases the uncertainty)
+# sys dio_norm lnN      -         0.70          -          -   // Mostly momentum scale+resolution tail
+# sys csm_norm lnN      -          -           0.2         -   // Cosmic flux normalization/time dependence
+# sys rpc_norm lnN      -          -            -         0.29 // Pion/muon yield uncertainty
+# sys dio_stat lnN      -         0.58          -          -   // Statistical uncertainty on the DIO background
 
 # Multiplifying constants, currently not implemented
 # mod br_cap           0.609     -            -          -

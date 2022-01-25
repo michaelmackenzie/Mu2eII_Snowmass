@@ -20,6 +20,8 @@ int model_builder(const char* file = "mu2eii/scripts/datacard.txt", bool print =
   cout << "- Null model mean = " << model->GetMean() << endl;
   TH1D* hnull = model->GeneratePDF(rnd);
   hnull->SetName("hNullPdf");
+
+  TCanvas* c = new TCanvas();
   hnull->SetLineWidth(2);
   hnull->SetFillStyle(3003);
   hnull->SetFillColor(kBlue);
