@@ -4,6 +4,8 @@
 struct TrackPar_t {
   double fP;
   double fPFront;
+  double fPExit;
+  double fPMCExit;
   double fT0;
   double fPErr;
   double fT0Err;
@@ -21,6 +23,7 @@ struct TrackPar_t {
   double fFitCons;
   double fChiSq;
   int    fNDoF;
+  int    fDiskID;
   double fECluster;
   double fEOverP;
   double fTrkQual;

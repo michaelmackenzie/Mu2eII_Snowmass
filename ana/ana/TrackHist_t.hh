@@ -2,15 +2,20 @@
 #define TRACKHIST_T
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 
 struct TrackHist_t {
   TH1F* hP[3];
   TH1F* hT0;
   TH2F* hPvsT0;
+  TH3F* hPvsT0vsMVA;
   TH1F* hPFront;
   TH1F* hDpf;
   TH1F* hDpGen;
   TH2F* hPvsPFront;
+  TH1F* hPExit;
+  TH1F* hPMCExit;
+  TH1F* hDpExit;
   TH1F* hPErr;
   TH1F* hT0Err;
   TH1F* hD0;

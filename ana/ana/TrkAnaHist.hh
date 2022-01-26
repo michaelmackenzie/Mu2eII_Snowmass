@@ -22,6 +22,7 @@
 #include "TDirectory.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TString.h"
 
 namespace mu2eii {
@@ -49,8 +50,10 @@ namespace mu2eii {
     TrackPar_t           fTp;
     mu2e::TrkInfo        fTrkInfo;
     mu2e::TrkFitInfo     fTrkFitInfo;
+    mu2e::TrkFitInfo     fTrkFitInfo_exit;
     mu2e::TrkInfoMC      fTrkInfoMC;
     mu2e::TrkInfoMCStep  fTrkInfoMCStep;
+    mu2e::TrkInfoMCStep  fTrkInfoMCStep_exit;
     mu2e::TrkCaloHitInfo fTrkCaloHitInfo;
     // mu2e::TrkQualInfo    fTrkQualInfo;
     // TrkQualInfo          fTrkQualInfo;

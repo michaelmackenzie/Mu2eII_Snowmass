@@ -17,6 +17,8 @@ namespace mu2eii {
     fHistTitles[  0] = new TString("all events");
     fHistTitles[  1] = new TString("all tracks");
     fHistTitles[  2] = new TString("all tracks with weights");
+    fHistTitles[  3] = new TString("all tracks with a cluster > 10 MeV");
+    fHistTitles[  4] = new TString("all tracks without a cluster");
     fHistTitles[100] = new TString("all tracks passing track ID");
     fHistTitles[101] = new TString("all tracks passing track ID with weights");
     fHistTitles[102] = new TString("all tracks passing track ID except failing TrkQual");
@@ -56,15 +58,19 @@ namespace mu2eii {
     dir->SetTitle(fHistTitles[ihist]->Data());
     dir->cd();
     fDirs[ihist] = dir;
-    Hist.hP[0]      = new TH1F("p_0", "Track P", 400, 0, 200);
-    Hist.hP[1]      = new TH1F("p_1", "Track P", 400, 80, 120);
-    Hist.hP[2]      = new TH1F("p_2", "Track P", 400, 0, 200);
+    Hist.hP[0]      = new TH1F("p_0", "Track P", 400,   0, 200);
+    Hist.hP[1]      = new TH1F("p_1", "Track P", 400,  80, 120);
+    Hist.hP[2]      = new TH1F("p_2", "Track P", 400, 100, 110);
     Hist.hT0        = new TH1F("t0", "Track T0", 200, 0, 2000);
     Hist.hPvsT0     = new TH2F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
+    // Hist.hPvsT0vsMVA= new TH3F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
     Hist.hPFront    = new TH1F("pfront", "Track P(Front MC)", 1000, 0, 200);
     Hist.hDpf       = new TH1F("dpf", "Track P - Track P(Front MC)", 200, -10, 10);
     Hist.hDpGen     = new TH1F("dpgen", "Track P - Gen P(MC)", 200, -10, 10);
     Hist.hPvsPFront = new TH2F("p_vs_front", "Track P vs P(Front MC)", 200, 50, 150, 200, 50, 150);
+    Hist.hPExit     = new TH1F("p_exit", "Track P(Exit)", 400,  80, 120);
+    Hist.hPMCExit   = new TH1F("p_mcexit", "Track P(Exit MC)", 400,  80, 120);
+    Hist.hDpExit    = new TH1F("dpexit", "Track P(Exit) - Track P(Exit MC)", 200, -10, 10);
     Hist.hPErr      = new TH1F("p_err", "Track P uncertainty", 100, 0, 5);
     Hist.hT0Err     = new TH1F("t0_err", "Track T0 uncertainty", 100, 0, 10);
     Hist.hD0        = new TH1F("d0", "Track D0", 100, -250, 250);
@@ -81,7 +87,7 @@ namespace mu2eii {
     Hist.hNMat              = new TH1F("nmat", "Track N(mat)", 200, 0, 200);
     Hist.hNActiveMat        = new TH1F("nactivemat", "Track N(active mat)", 200, 0, 200);
     Hist.hNActiveMatFrac    = new TH1F("nactvmatfrac", "Track N(active mat) / N(mat)", 110, 0., 1.1);
-    Hist.hChiSq     = new TH1F("chisq", "Track #chi^2", 100, 0, 100);
+    Hist.hChiSq     = new TH1F("chisq", "Track #chi^2", 100, 0, 200);
     Hist.hChiSqR    = new TH1F("chisq_r", "Track reduced #chi^2", 100, 0, 10);
     Hist.hECluster  = new TH1F("e_cluster", "Cluster energy", 300, 0, 150);
     Hist.hEoverP    = new TH1F("e_over_p", "Cluster E over Track P", 100, 0, 2);
@@ -110,6 +116,9 @@ namespace mu2eii {
     Hist.hDpf       ->Fill(tp.fP - tp.fPFront , weight);
     Hist.hDpGen     ->Fill(tp.fP - tp.fGenP , weight);
     Hist.hPvsPFront ->Fill(tp.fP, tp.fPFront , weight);
+    Hist.hPExit     ->Fill(tp.fPExit , weight);
+    Hist.hPMCExit   ->Fill(tp.fPMCExit , weight);
+    Hist.hDpExit    ->Fill(tp.fPExit - tp.fPMCExit , weight);
     Hist.hPErr      ->Fill(tp.fPErr , weight);
     Hist.hT0Err     ->Fill(tp.fT0Err , weight);
     Hist.hD0        ->Fill(tp.fD0 , weight);
@@ -152,8 +161,10 @@ namespace mu2eii {
     TString type = "de";
     tree->SetBranchAddress(Form("%s"       , type.Data()),  &fTrkInfo   );
     tree->SetBranchAddress(Form("%sent"    , type.Data()),  &fTrkFitInfo);
+    tree->SetBranchAddress(Form("%sxit"    , type.Data()),  &fTrkFitInfo_exit);
     tree->SetBranchAddress(Form("%smcpri"  , type.Data()),  &fSimInfo   );
     tree->SetBranchAddress(Form("%smcent"  , type.Data()),  &fTrkInfoMCStep);
+    tree->SetBranchAddress(Form("%smcxit"  , type.Data()),  &fTrkInfoMCStep_exit);
     tree->SetBranchAddress(Form("%stch"    , type.Data()),  &fTrkCaloHitInfo);
     // tree->SetBranchAddress(Form("%strkqual", type.Data()),  &fTrkQualInfo);
     tree->SetBranchAddress(Form("%squal"   , type.Data()),  &fRecoQualInfo);
@@ -175,6 +186,8 @@ namespace mu2eii {
     tp.fP     = fTrkFitInfo._fitmom;
     tp.fPErr  = fTrkFitInfo._fitmomerr;
     tp.fPFront = fTrkInfoMCStep._mom;
+    tp.fPExit  = fTrkFitInfo_exit._fitmom;
+    tp.fPMCExit= fTrkInfoMCStep_exit._mom;
     tp.fTanDip = fTrkFitInfo._fitpar._td;
     tp.fD0     = fTrkFitInfo._fitpar._d0;
     tp.fRMax   = fabs(tp.fD0 + 2./fTrkFitInfo._fitpar._om);
@@ -182,7 +195,8 @@ namespace mu2eii {
     tp.fGenCode   = fSimInfo._gen;
     const static double me = 0.51099895; //electron mass, assuming the generated particle was an electron, could use the PDG ID to get the correct particle mass
     tp.fGenP     = (tp.fGenEnergy > me) ? sqrt(tp.fGenEnergy*tp.fGenEnergy - me*me) : 0.;
-    tp.fECluster = (fTrkCaloHitInfo._did < 0) ? 0. : fTrkCaloHitInfo._edep;
+    tp.fDiskID   = fTrkCaloHitInfo._did;
+    tp.fECluster = (tp.fDiskID < 0) ? 0. : fTrkCaloHitInfo._edep;
     tp.fDefaultTrkQual = fRecoQualInfo._qualsAndCalibs[2];
 
     tp.fNPOT = fEventInfo._nprotons;
@@ -286,6 +300,13 @@ namespace mu2eii {
         FillHistograms(fHists[1], fTp);
         //With event weights (if applicable)
         FillHistograms(fHists[2], fTp, fTp.fEventWeight);
+
+        //Events with clusters
+        if(fTp.fECluster > 10.)
+          FillHistograms(fHists[3], fTp);
+        else if(fTp.fDiskID < 0) //no cluster
+          FillHistograms(fHists[4], fTp);
+
         //Track selection cut
         if(fTp.fTrackID[0] == 0) {
           FillHistograms(fHists[100], fTp);
