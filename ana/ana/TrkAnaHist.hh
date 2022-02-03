@@ -70,6 +70,7 @@ namespace mu2eii {
     mva_data*            fTrkQualMVA; //for on-the-fly MVA evaluations
     mva_data*            fPIDMVA;
 
+    Int_t                fMomCorrMode;
 };
 }
 #endif

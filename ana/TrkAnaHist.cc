@@ -8,6 +8,8 @@ namespace mu2eii {
     //SU2020 MVAs
     fTrkQualMVA = new mva_data("fele2s51b1",1070);
     fPIDMVA     = new mva_data("ele00s61b0",1000);
+
+    fMomCorrMode = 0; //Nominal offset to tracker front reconstructed momentum
   }
 
   void TrkAnaHist::BeginJob() {
@@ -23,6 +25,7 @@ namespace mu2eii {
     fHistTitles[101] = new TString("all tracks passing track ID with weights");
     fHistTitles[102] = new TString("all tracks passing track ID except failing TrkQual");
     fHistTitles[103] = new TString("all tracks passing track ID without TrkQual cut");
+    fHistTitles[104] = new TString("all tracks passing track ID without momentum cut");
     fHistTitles[110] = new TString("all tracks passing track ID, T0 > 700 ns");
     fHistTitles[111] = new TString("all tracks passing track ID with weights, T0 > 700 ns");
     fHistTitles[120] = new TString("all tracks passing track ID, T0 > 640 ns");
@@ -65,7 +68,7 @@ namespace mu2eii {
     Hist.hPvsT0     = new TH2F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
     // Hist.hPvsT0vsMVA= new TH3F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
     Hist.hPFront    = new TH1F("pfront", "Track P(Front MC)", 1000, 0, 200);
-    Hist.hDpf       = new TH1F("dpf", "Track P - Track P(Front MC)", 200, -10, 10);
+    Hist.hDpf       = new TH1F("dpf", "Track P - Track P(Front MC)", 1000, -5, 5);
     Hist.hDpGen     = new TH1F("dpgen", "Track P - Gen P(MC)", 200, -10, 10);
     Hist.hPvsPFront = new TH2F("p_vs_front", "Track P vs P(Front MC)", 200, 50, 150, 200, 50, 150);
     Hist.hPExit     = new TH1F("p_exit", "Track P(Exit)", 400,  80, 120);
@@ -101,7 +104,7 @@ namespace mu2eii {
     Hist.hTrkQual   = new TH1F("trkqual", "Track ANN quality score", 110, 0., 1.1);
     Hist.hPIDScore  = new TH1F("pid", "Track PID score", 260, -1.5, 1.1);
 
-    Hist.hNPOT      = new TH1F("npot", "N(POT)", 150, 0, 1.5e8);
+    Hist.hNPOT      = new TH1F("npot", "N(POT)", 150, 0, 1.5e10);
     Hist.hGenEnergy = new TH1F("gen_e", "Gen energy", 200, 0, 200);
     Hist.hGenCode   = new TH1F("gen_id", "Gen ID", 200, 0, 200);
   }
@@ -168,9 +171,11 @@ namespace mu2eii {
     tree->SetBranchAddress(Form("%stch"    , type.Data()),  &fTrkCaloHitInfo);
     // tree->SetBranchAddress(Form("%strkqual", type.Data()),  &fTrkQualInfo);
     tree->SetBranchAddress(Form("%squal"   , type.Data()),  &fRecoQualInfo);
+    tree->SetBranchAddress("evtinfo."                    ,  &fEventInfo);
   }
 
   void TrkAnaHist::InitTrackPar(TrackPar_t& tp) {
+    const double mom_corr = (fMomCorrMode == 0) ? 0.0556 : 0.2077;
     tp.fT0    = fTrkInfo._t0;
     tp.fT0Err = fTrkInfo._t0err;
     tp.fNHits = fTrkInfo._nhits;
@@ -183,7 +188,7 @@ namespace mu2eii {
     tp.fNDoF  = fTrkInfo._ndof;
     tp.fChiSq = fTrkInfo._chisq;
     tp.fFitCons = fTrkInfo._fitcon;
-    tp.fP     = fTrkFitInfo._fitmom;
+    tp.fP     = fTrkFitInfo._fitmom + mom_corr;
     tp.fPErr  = fTrkFitInfo._fitmomerr;
     tp.fPFront = fTrkInfoMCStep._mom;
     tp.fPExit  = fTrkFitInfo_exit._fitmom;
@@ -340,6 +345,9 @@ namespace mu2eii {
               FillHistograms(fHists[230], fTp);
             }
           }
+        }
+        if((fTp.fTrackID[0] & (~(1 << 8))) == 0) { //Track ID without momentum cut
+          FillHistograms(fHists[104], fTp);
         }
       }
     }

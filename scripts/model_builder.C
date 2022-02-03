@@ -12,7 +12,7 @@ int model_builder(const char* file = "mu2eii/scripts/datacard.txt", bool print =
   var_t& signal_mu = builder.GetPOI();
   TRandom3 rnd(90);
   model->verbose_ = 1;
-  model->ngen_ = 1e5;
+  model->ngen_ = (model->sys_.size() == 0) ? 1 : 1e5; //adjust N(samples) to generate a PDF based on number of systematics
   model->nmax_ = std::max(20., 20*model->GetMean());
 
   //Generate the null hypothesis

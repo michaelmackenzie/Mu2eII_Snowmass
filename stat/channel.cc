@@ -182,9 +182,11 @@ namespace mu2eii {
       delete h;
     }
     else if (channel_name == "CE" && (Mode % 1000) / 100 == 1) { //Mu2e-II histogram
-      const char* dsid    = "mu2eiisnowmass.ce";
+      const bool use_mix = true;
+
+      const char* dsid    = (use_mix) ? "mu2eiisnowmass.ce_mix" : "mu2eiisnowmass.ce";
       const char* ana_job = "trkanahist.1011";
-      double      ngen (1.e6);
+      const double ngen   = (use_mix) ? 1.96e5 : 1.e6;
 
       double sf1b = NPOT_1B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
       double sf2b = NPOT_2B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
@@ -195,11 +197,11 @@ namespace mu2eii {
       // fTimeVsMom = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2004/p_vs_time")->Clone("CE_t_vs_p");
       TFile* f = TFile::Open(Form("%s/%s.%s.hist", GetHistDir(), dsid, ana_job));
       if(!f) throw 20;
-      fTimeVsMom = (TH2F*) f->Get("CE/trk_100/p_vs_t0")->Clone("CE_t_vs_p");
+      fTimeVsMom = (TH2F*) f->Get(Form("%s/trk_100/p_vs_t0", (use_mix) ? "CE_Mix" : "CE"))->Clone("CE_t_vs_p");
       double sum1 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
       fTimeVsMom->Scale(sf1b);
       double sum2 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
-      TH2F* h = (TH2F*) f->Get("CE/trk_100/p_vs_t0")->Clone("tmp"); //FIXME: Add two-batch CE histogram
+      TH2F* h = (TH2F*) f->Get(Form("%s/trk_100/p_vs_t0", (use_mix) ? "CE_Mix" : "CE"))->Clone("tmp"); //FIXME: Add two-batch CE histogram
       // TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2005/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
