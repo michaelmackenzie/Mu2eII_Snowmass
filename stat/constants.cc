@@ -26,7 +26,7 @@ namespace mu2eii {
     Mode %= 10;
 
     if(mu2eIIMode) { //Mu2e-II parameters
-      _muon_stop_rate = 8.9e-5;
+      _muon_stop_rate = 9.1e-5;
       _rpc_scale = (9.6e-5)/(2.1e-3); //change in the pion stopping rate, ignoring arrival time changes
       _rpc_oot_scale = (9.6e-5)/(2.1e-3); //change in the pion stopping rate, should be independent of in time vs out-of-time
       _cosmics_scale = 1.; //Mu2e-II era scaling is from switching 2D density functions for cosmics

@@ -27,12 +27,18 @@ int process_file(TString fname, TString dname, int nentries = -1) {
 int process_trkana(TString tag = "", int nentries = -1) {
   fMomCorrMode = 0;
 
-  vector<TString> datasets = {"CE", "CE_Mix", "DIO"};
+  vector<TString> datasets = {"CE", "CE_UT", "CE_Mix", "CE_Mix_UT", "CE_Mix_NT", "DIO"};
   for(TString dataset : datasets) {
     if(tag != "" && !dataset.Contains(tag)) continue;
     TString fname;
     if(dataset == "CE_Mix") {
       fname = "/mu2e/data/users/mmackenz/mu2eii/snowmass/tree/nts.mu2e.CeEndpointMixTriggered.Mu2eIIa2b.root";
+    } else if(dataset == "CE_Mix_UT") {
+      fname = "/mu2e/data/users/mmackenz/mu2eii/snowmass/tree/nts.mu2e.CeEndpointMixUntriggered.TrkAnaReco.root";
+    } else if(dataset == "CE_Mix_NT") {
+      fname = "/mu2e/data/users/mmackenz/mu2eii/snowmass/tree/nts.mu2e.CeEndpointMix.TrkAnaReco.root";
+    } else if(dataset == "CE_UT") {
+      fname = fTreeDir + "CE_TrkAna_Untrig_Mu2eII_NewGeom.root";
     } else {
       fname = fTreeDir + dataset + "_TrkAna_Trig_Mu2eII_NewGeom.root";
     }
