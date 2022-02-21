@@ -10,6 +10,22 @@
 namespace mu2eii {
 
   //-----------------------------------------------------------------------------
+  // free function -- functional parameterization of the 2D DIO background for Mu2e-II
+  //-----------------------------------------------------------------------------
+  double f_mu2eii_bgr_dio(double* X, double* P) {
+    const float p        = X[0];
+    const float t        = X[1];
+    const static double norm = 1./2425340.8; //to set the integral of [600, 1650] ns x [103.8,105.1] MeV/c to match convolution
+    const double f_t = (54900.1 - 44.0778*t + 0.010211*t*t);
+    const double f_p = (exp(6.67534e2 - 6.43286*p));
+
+    //momentum is normalized given assumed N(muon stops), divide by assumed N(muon stops)
+    const double rho_per_mev_ns_pot = f_t*f_p*norm/(3.6e22*8.9e-5);
+
+    return rho_per_mev_ns_pot;
+  }
+
+  //-----------------------------------------------------------------------------
   // free function -- functional parameterization of the 2D cosmic background for Mu2e-II
   //-----------------------------------------------------------------------------
   double f_mu2eii_bgr_cosmics(double* X, double* P) {
@@ -135,6 +151,7 @@ namespace mu2eii {
       double      ngen (1.e7), /*erange(104.97 - 100.),*/ frac_tail(3.4456778e-13); // properties of the dataset
       //frac_tail is the integral of the DIO LL spectrum on Al from 100 to 104.97 MeV
 
+      ExtraSF *= _constants.unmixed_scale();
       double sf1b = NPOT_1B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail/ngen*ExtraSF;
       double sf2b = NPOT_2B*_constants.muon_stop_rate()*(1.-_constants.muon_capture())*frac_tail/ngen*ExtraSF;
 
@@ -151,6 +168,34 @@ namespace mu2eii {
       TH2F* h = (TH2F*) f->Get("DIO/trk_100/p_vs_t0")->Clone("tmp"); //FIXME: Add two-batch DIO histogram
       // TH2F* h    = (TH2F*) gh2(Form("%s/%s.%s.hist",GetHistDir(),dsid,ana_job),"su2020_TrackAna","trk_2007/p_vs_time")->Clone("tmp");
       fTimeVsMom->Add(h,sf2b);
+
+      if((Mode % 100000) / 10000 == 1) { //use the fit PDF of the DIO background, normalized per muon stop
+        fTimeVsMom->Reset();
+        const double xmin = fTimeVsMom->GetXaxis()->GetXmin();
+        const double xmax = fTimeVsMom->GetXaxis()->GetXmax();
+
+        const double ymin = fTimeVsMom->GetYaxis()->GetXmin();
+        const double ymax = fTimeVsMom->GetYaxis()->GetXmax();
+        TF2* func = new TF2("bgr_dio_2D",f_mu2eii_bgr_dio, xmin, xmax, ymin, ymax);
+
+        const int nbx = fTimeVsMom->GetNbinsX();
+        const int nby = fTimeVsMom->GetNbinsY();
+        for(int ix=1; ix<=nbx; ix++) {
+          const double x_b_min = fTimeVsMom->GetXaxis()->GetBinLowEdge(ix);
+          const double x_b_max = fTimeVsMom->GetXaxis()->GetBinWidth  (ix) + x_b_min;
+          for(int iy=1; iy<=nby; iy++) {
+            const double y_b_min = fTimeVsMom->GetYaxis()->GetBinLowEdge(iy);
+            const double y_b_max = fTimeVsMom->GetYaxis()->GetBinWidth  (iy) + y_b_min;
+            //-----------------------------------------------------------------------------
+            // f_bgr_dio returns background normalized per muon stop
+            //-----------------------------------------------------------------------------
+            double bgr = (NPOT_1B+NPOT_2B)*_constants.muon_stop_rate()*ExtraSF;
+            bgr *= func->Integral(x_b_min, x_b_max, y_b_min, y_b_max); //integral of the PDF in the bin
+            fTimeVsMom->SetBinContent(ix,iy,bgr);
+            fTimeVsMom->SetBinError  (ix,iy,bgr*0.1); //assume ~10% uncertainty
+          }
+        }
+      }
       double sum3 = GetIntegral(PMin+1.e-3, PMax-1.e-3, TMin+1.e-3, TMax-1.e-3);
 
       if(fVerbose > 0)
@@ -188,6 +233,11 @@ namespace mu2eii {
       const char* ana_job = "trkanahist.1011";
       const double ngen   = (use_mix) ? 1.96e5 : 1.e6;
 
+      if(use_mix) {
+        ExtraSF *= _constants.mixed_scale();
+      } else {
+        ExtraSF *= _constants.unmixed_scale();
+      }
       double sf1b = NPOT_1B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
       double sf2b = NPOT_2B*_constants.muon_stop_rate()*_constants.muon_capture()/ngen*ExtraSF;
 

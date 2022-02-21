@@ -67,7 +67,8 @@ namespace mu2eii {
     Hist.hT0        = new TH1F("t0", "Track T0", 200, 0, 2000);
     Hist.hPvsT0     = new TH2F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
     // Hist.hPvsT0vsMVA= new TH3F("p_vs_t0", "Track P vs T0", 800, 80, 120, 200, 0, 2000);
-    Hist.hPFront    = new TH1F("pfront", "Track P(Front MC)", 1000, 0, 200);
+    Hist.hPFront[0] = new TH1F("pfront", "Track P(Front MC)", 1000, 0, 200);
+    Hist.hPFront[1] = new TH1F("pfront_1", "Track P(Front MC)", 2000, 90, 110);
     Hist.hDpf       = new TH1F("dpf", "Track P - Track P(Front MC)", 1000, -5, 5);
     Hist.hDpGen     = new TH1F("dpgen", "Track P - Gen P(MC)", 200, -10, 10);
     Hist.hPvsPFront = new TH2F("p_vs_front", "Track P vs P(Front MC)", 200, 50, 150, 200, 50, 150);
@@ -115,7 +116,8 @@ namespace mu2eii {
     Hist.hP[2]      ->Fill(tp.fP , weight);
     Hist.hT0        ->Fill(tp.fT0 , weight);
     Hist.hPvsT0     ->Fill(tp.fP, tp.fT0 , weight);
-    Hist.hPFront    ->Fill(tp.fPFront , weight);
+    Hist.hPFront[0] ->Fill(tp.fPFront , weight);
+    Hist.hPFront[1] ->Fill(tp.fPFront , weight);
     Hist.hDpf       ->Fill(tp.fP - tp.fPFront , weight);
     Hist.hDpGen     ->Fill(tp.fP - tp.fGenP , weight);
     Hist.hPvsPFront ->Fill(tp.fP, tp.fPFront , weight);

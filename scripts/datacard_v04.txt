@@ -1,0 +1,51 @@
+# -*- mode: tcl -*-
+# Example ModelBuilder datacard
+# Signal yield normalized to Rmue = 1e-17
+
+##############################################################################
+# Mode definitions:
+#  Mode     3: Mu2e Run I
+#  Mode     5: Mu2e Run I + II, only Run I has 1-batch mode and II is 3.6e20 POT - Run I POT
+#  Mode   113: 4.4e22 POT, batch-mode 2 scales, no RPC OOT
+#  Mode   153: 3.6e22 POT, batch-mode 2 scales, no RPC OOT
+#  Mode   163: 3.6e22*5/3 POT, batch-mode 2 scales, no RPC OOT
+#  Mode  1113: 4.4e22 POT, batch-mode 2 scales, RPC OOT
+#  Mode  1153: 3.6e22 POT, batch-mode 2 scales, RPC OOT
+#  Mode  1163: 3.6e22*5/3 POT, batch-mode 2 scales, RPC OOT
+#  Mode 10163: 3.6e22*5/3 POT, batch-mode 2 scales, no RPC OOT, and DIO background fit
+#  Mode 11163: 3.6e22*5/3 POT, batch-mode 2 scales, RPC OOT, and DIO background fit
+##############################################################################
+# Optimized signal windows are:
+#       pmin       pmax       tmin       tmax    Cosmics        DIO        PbarTOT         RPC           Total +- Sigma           Signal         s5          SES         Rmue
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Mode 163 before adding mixed/unmixed scales
+#   104.050    104.900    690.000   1650.000  2.63921e-01  2.06811e-01  0.00000e+00  3.28908e-02 (5.03623e-01 +- 1.19499e-01)  2.15110e+00  7.18705e+00  4.64878e-18  3.34110e-17
+# Mode 163 after adding mixed/unmixed scales
+#   104.050    104.900    690.000   1650.000  2.63921e-01  1.86647e-01  0.00000e+00  3.28908e-02 (4.83459e-01 +- 1.07880e-01)  3.08154e+00  7.10512e+00  3.24513e-18  2.30570e-17
+# Mode 10163 after adding mixed/unmixed scales
+#   104.050    104.900    690.000   1650.000  2.63921e-01  2.62750e-01  0.00000e+00  3.28908e-02 (5.59562e-01 +- 6.16760e-03)  3.08154e+00  7.40501e+00  3.24513e-18  2.40302e-17
+##########################################################################################################################
+# Results:														 #
+# Mode      N(Null)     90% CL   N(discovery)  Discovery R     N(Null)     90% CL   N(discovery)  Discovery R    SES	 #
+#          with syst. with syst.  with syst.    with syst.     no syst.   no syst.    no syst.      no syst.       	 #
+# ---------------------------------------------------------------------------------------------------------------------- #
+#   163 (b)   0       x.xxxe-xx      xx         x.xxxe-xx        0       8.981e-18       8         3.331e-17   4.649e-18 #
+#   163 (a)   0       x.xxxe-xx      xx         x.xxxe-xx        0       6.339e-18       8         2.332e-17   3.245-18 #
+# 10163 (a)   0       x.xxxe-xx      xx         x.xxxe-xx        0       6.088e-18       8         2.307e-17   3.245e-18 #
+##########################################################################################################################
+
+
+# Define each contribution
+source              signal      dio         cosmics       rpc           pbar
+class                 0          1            1            1             1
+# Standard classes: 0 = signal, >0 = background
+
+# Currently only one category is allowed
+category             main      main          main        main          main
+source              signal      dio         cosmics       rpc          pbar
+# # Mode 163 (before)
+# rate               2.15110   2.06811e-01  2.63921e-01  3.28908e-02      0
+# mode 163 (after)
+rate               3.08154   1.86647e-01  2.63921e-01  3.28908e-02      0
+# # Mode 10163 (after)
+# rate               3.08154   2.62750e-01  2.63921e-01  3.28908e-02      0

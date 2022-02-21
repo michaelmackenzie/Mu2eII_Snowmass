@@ -9,7 +9,7 @@ struct TrackHist_t {
   TH1F* hT0;
   TH2F* hPvsT0;
   TH3F* hPvsT0vsMVA;
-  TH1F* hPFront;
+  TH1F* hPFront[2];
   TH1F* hDpf;
   TH1F* hDpGen;
   TH2F* hPvsPFront;

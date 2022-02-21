@@ -6,12 +6,25 @@ namespace mu2eii {
 
   constants::constants() : _muon_capture(0.609), _muon_stop_rate(1.59e-3),
                            _npot_1b(2.86e19), _npot_2b(9.03e18), _cosmics_scale(1.),
-                           _pbar_scale(1.), _rpc_scale(1.), _rpc_oot_scale(1.),_extinction(1.e-10) {
+                           _pbar_scale(1.), _rpc_scale(1.), _rpc_oot_scale(1.),_extinction(1.e-10),
+                           _mixed_scale(1.), _unmixed_scale(1.) {
   }
 
   /**
-     Mode definiton: 1000 * RPC OOT mode + 100 * use Mu2e-II datasets + 10 * Mu2e-II mode + Overall mode
-     Mu2e-II mode: 
+     Mode definiton: 10,000 * use fit DIO PDF + 1000 * RPC OOT mode + 100 * use Mu2e-II datasets + 10 * Mu2e-II mode + 1 * Overall mode
+     Mu2e-II mode:
+     0 : Mu2e era values
+     1 : use 4.4e22 POT and 2-batch mode SU2020 histograms
+     2 : use 4.4e22 POT and 1-batch mode SU2020 histograms
+     3 : Mu2e-II mode 1 + suppress RPC by a factor of 10
+     4 : Mu2e-II mode 1 + suppress RPC to 0
+     5 : Mu2e-II mode 1 with 3.6e22 POT (3-year run)
+     6 : Mu2e-II mode 1 with 5/3*3.6e22 POT (5-year run)
+     7 : Mu2e-II mode 1 with RPC suppressed by a factor of 34
+     Overall Mode:
+     0 : No additional scales
+     3 : Apply deadtime, upstream rejection, luminosity cut-off, and trigger efficiency
+     5 : 3 but with 3.6e20 POT, with Run 1 1-batch mode POT and the remaining in 2-batch mode
    **/
   constants::constants(int Mode, int isMu2eIIDataset) : constants() {
     float eff_ur_1b     (0.994);
@@ -26,6 +39,8 @@ namespace mu2eii {
     Mode %= 10;
 
     if(mu2eIIMode) { //Mu2e-II parameters
+      _mixed_scale = (0.95/0.70)*(0.95/0.90); //remove the high inefficiency from the mixed samples
+      _unmixed_scale = (0.95)*(0.95); //apply the trigger + selection pileup inefficiency
       _muon_stop_rate = 9.1e-5;
       _rpc_scale = (9.6e-5)/(2.1e-3); //change in the pion stopping rate, ignoring arrival time changes
       _rpc_oot_scale = (9.6e-5)/(2.1e-3); //change in the pion stopping rate, should be independent of in time vs out-of-time
