@@ -425,6 +425,18 @@ namespace FCSys {
           var.set_dependents({}, {&beta}, {});
           source.add_.push_back(&var);
           if(_verbose > 6) printf(" ModelBuilder::%s: Adding systematic %s to source %s with uncertainty %.3e\n", __func__, var.name_.Data(), source.name_.Data(), uncertainty);
+        } else if(type == "TrGaus") { //Truncated Gaussian
+          //source = nominal + sys; sys = Gaussian(mean = 0, width = uncertainty) = uncertainty*Gaussian(0, 1)
+          const double uncertainty = value*rate; //absolute uncertainty
+          //enforce sys >= -nominal
+          if(uncertainty > 0.) {
+            beta.min_ = std::max(beta.min_, -1.*rate/uncertainty);
+            beta.retry_ = true; //if out of range, re-pull from the Gaussian distribution
+          }
+          var.nom_ = uncertainty; var.val_ = uncertainty; var.min_ = -10.*uncertainty; var.max_ = 10.*uncertainty;
+          var.set_dependents({}, {&beta}, {});
+          source.add_.push_back(&var);
+          if(_verbose > 6) printf(" ModelBuilder::%s: Adding systematic %s to source %s with uncertainty %.3e\n", __func__, var.name_.Data(), source.name_.Data(), uncertainty);
         } else {
           printf("ModelBuilder::%s: Error! Unknown uncertainty type %s for systematic %s", __func__, type.c_str(), sys.name_.Data());
           return 1;

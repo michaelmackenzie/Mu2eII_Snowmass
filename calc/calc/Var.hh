@@ -23,10 +23,10 @@ namespace FCSys {
   //////////////////////////////////////////////////////////////
   class var_t {
   public:
-    var_t(TString name = "Default") : name_(name), min_(-1.), max_(1.), nom_(0.), val_(0.), constant_(false), verbose_(0) {}
-    var_t(TString name, double nom) : name_(name), min_(nom-1.), max_(nom+1.), nom_(nom), val_(nom), constant_(false), verbose_(0) {}
+    var_t(TString name = "Default") : name_(name), min_(-1.), max_(1.), nom_(0.), val_(0.), constant_(false), verbose_(0), retry_(false) {}
+    var_t(TString name, double nom) : name_(name), min_(nom-1.), max_(nom+1.), nom_(nom), val_(nom), constant_(false), verbose_(0), retry_(false) {}
     var_t(TString name, double nom, double min, double max, TString pdf = "Gauss") :
-      name_(name), min_(min), max_(max), nom_(nom), val_(nom), pdf_(pdf), constant_(false), verbose_(0) {}
+      name_(name), min_(min), max_(max), nom_(nom), val_(nom), pdf_(pdf), constant_(false), verbose_(0), retry_(false) {}
     virtual ~var_t();
 
     //To ignore calls to set_rnd_val, remains constant
@@ -49,12 +49,16 @@ namespace FCSys {
     //set the base value to a random value following its PDF
     void set_rnd_val(TRandom3& rnd) {
       if(constant_) return;
-      if(pdf_ == "Gauss") {
-        set_val(rnd.Gaus(nom_));
-      }
-      else if(pdf_ == "Flat") {
-        set_val(min_ + (max_-min_)*rnd.Uniform());
-      }
+      double val = nom_;
+      do {
+        if(pdf_ == "Gauss") {
+          val = rnd.Gaus(nom_);
+        }
+        else if(pdf_ == "Flat") {
+          val = min_ + (max_-min_)*rnd.Uniform();
+        }
+      } while(retry_ && (val < min_ || val > max_));
+      set_val(val);
     }
 
     //Evaluate the value by taking the base value and applying the dependent variable values
@@ -119,6 +123,7 @@ namespace FCSys {
     TString pdf_;
     bool constant_;
     int verbose_;
+    bool retry_; //re-evaluate random drawing if out of bounds
     std::vector<var_t*> add_;
     std::vector<var_t*> mul_;
     std::vector<var_t*> pow_;
