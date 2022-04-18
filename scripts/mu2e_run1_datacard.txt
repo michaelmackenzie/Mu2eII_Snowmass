@@ -18,7 +18,7 @@ source              signal        dio      cosmics       rpc          pbar
 rate               4.23637  3.90553e-02  4.74529e-02  1.11215e-02  1.01270e-02
 # rate                 4.17      0.039     0.047      0.011    0.010
 
-# Systematic uncertainties
+# Systematic uncertainties (lnN or Gaus)
 sys lumi     lnN      0.1          0.1         -          0.1           0.1  // Muon capture measurement uncertainty
 sys sig_norm lnN     0.04          -          -           -             -   // Mostly momentum scale
 sys dio_norm lnN      -           0.63        -           -             -   // Mostly momentum scale+resolution tail
