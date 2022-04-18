@@ -1,0 +1,28 @@
+# -*- mode: tcl -*-
+# Example ModelBuilder datacard
+# Signal yield normalized to Rmue = 1e-15
+
+# Define each contribution
+source              signal      dio     cosmics      rpc     pbar
+class                 0          1         1          1       1
+# Standard classes: 0 = signal, >0 = background
+
+# 2022-01-11 P.Murat:
+#    pmin      pmax      tmin      tmax   Cosmics         DIO         PbarTOT        RPC        Total       Signal        s5         SES          Rmue
+# ----------------------------------------------------------------------------------------------------------------------------------------------------
+#  103.600   104.900   640.000  1650.000  4.74529e-02  3.90553e-02  1.01270e-02  1.11215e-02  1.07757e-01  4.23637e+00  4.87063e+00  2.36051e-16 1.14972e-15 
+
+# Currently only one category is allowed
+category             main        main       main        main          main
+source              signal        dio      cosmics       rpc          pbar
+rate               4.23637  3.90553e-02  4.74529e-02  1.11215e-02  1.01270e-02
+# rate                 4.17      0.039     0.047      0.011    0.010
+
+# Systematic uncertainties
+sys lumi     lnN     0.1          0.1         -          0.1           0.1  // Muon capture measurement uncertainty
+sys sig_norm lnN     0.04          -          -           -             -   // Mostly momentum scale
+sys dio_norm lnN      -           0.63        -           -             -   // Mostly momentum scale+resolution tail
+sys csm_norm lnN      -            -         0.2          -             -   // Cosmic flux normalization/time dependence
+sys rpc_norm lnN      -            -          -          0.29           -   // Pion/muon yield uncertainty
+sys pbr_norm lnN      -            -          -           -             1   // Pbar production uncertainty
+

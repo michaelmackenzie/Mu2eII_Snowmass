@@ -27,8 +27,8 @@ namespace FCSys {
   public:
 
     Poisson_t(TString name, var_t& obs, std::vector<var_t*> mu,
-              std::vector<var_t*> sys = {}, std::vector<var_t*> spectators = {}) : name_(name), obs_(obs), mu_(mu),
-                                                                                   sys_(sys), spec_(spectators), spectate_(false),
+              std::vector<var_t*> sys = {}, std::vector<var_t*> spectators = {}) : name_(name), obs_(obs), mean_(new var_t("total_mean", 0., 0., obs.max_)),
+                                                                                   mu_(mu), sys_(sys), spec_(spectators), spectate_(false),
                                                                                    specBins_(100), verbose_(0),
                                                                                    ngen_(1e5), nmax_((int) obs.max_) {
     }
@@ -56,6 +56,7 @@ namespace FCSys {
 
     TString name_;
     var_t& obs_;
+    var_t* mean_; //total mean
     std::vector<var_t*> mu_;
     std::vector<var_t*> sys_;
     std::vector<var_t*> spec_;

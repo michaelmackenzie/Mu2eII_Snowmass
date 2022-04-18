@@ -43,6 +43,7 @@ namespace FCSys {
         return status;
       };
     }
+    //Apply the effects given in the card, such as systematic uncertainties
     status = ApplyModifications();
     if(status) return status;
 
@@ -279,6 +280,7 @@ namespace FCSys {
 
   //-----------------------------------------------------------------------------------------
   int ModelBuilder::AddSystematic(std::string line){
+    //Remove the "sys" label from the line defining a systematic
     std::string label = line.substr(0, line.find(" "));
     if(label != "sys") {
       printf("ModelBuilder::%s: Error! Defining systematic but line label = %s for line %s\n", __func__, label.c_str(), line.c_str());
@@ -293,27 +295,30 @@ namespace FCSys {
       return 2;
     }
 
+    //Get the name of the systematic
     std::string name = remainder.substr(0, remainder.find(" "));
     remainder.erase(0, remainder.find(" ")); //remove the name
     remainder = TrimLine(remainder);
     _systematics.push_back(var_t(name));
     // var_t& sys = _systematics.back();
 
+    //Get the systematic type, e.g. log-normal (lnN)
     std::string type = remainder.substr(0, remainder.find(" "));
     remainder.erase(0, remainder.find(" ")); //remove the type
     remainder = TrimLine(remainder);
     _systematicTypes.push_back(type);
 
+    //Retrieve the size of the systematic for each process
     std::vector<double> values;
     std::size_t pos(0);
     while(remainder.size() > 0) {
       pos = ((pos = remainder.find(" ")) != std::string::npos) ? pos : remainder.size();
       std::string next = remainder.substr(0, pos);
-      if(next == "-") {
+      if(next == "-") { //Does not apply to this process
         values.push_back(_NOEFFECT);
       } else {
         try {
-          double val = std::stod(next);
+          const double val = std::stod(next);
           values.push_back(val);
         } catch(const std::invalid_argument& e) {
           printf("ModelBuilder::%s: Value conversion error on token %s in line %s\n", __func__, next.c_str(), line.c_str());
@@ -323,11 +328,15 @@ namespace FCSys {
       remainder.erase(0, pos); //remove the current token
       remainder = TrimLine(remainder);
     }
+
+    //Check that the values size agrees with the number of processes
     if(values.size() != _sources.size()) {
       printf("ModelBuilder::%s: Error! Number of systematic values (%li) doesn't match the sources (%li) for line %s\n",
              __func__, values.size(), _sources.size(), line.c_str());
       return 4;
     }
+
+    //store the list of values associated with this systematic
     _systematicValues.push_back(values);
     return 0;
   }
@@ -348,9 +357,9 @@ namespace FCSys {
       var.nom_ = _rates[index];
       var.val_ = _rates[index];
       var.min_ = 0.;
-      if(_classes[index])
-        var.max_ = std::max(10.*var.nom_, 10.);
-      else { //signal
+      if(_classes[index]) {
+        var.max_ = std::max(100.*var.nom_, 1.);
+      } else { //signal
         var.max_ = std::max(10.*var.nom_, 50.);
         var.set_dependents({}, {&_r}, {});
       }
@@ -361,23 +370,27 @@ namespace FCSys {
 
   //-----------------------------------------------------------------------------------------
   int ModelBuilder::ApplyModifications(){
+    ///////////////////////////////////////////////////
     //First create the systematics
     for(unsigned index = 0; index < _systematics.size(); ++index) {
       var_t& sys = _systematics[index];
       _systematicBetas.push_back(var_t(Form("%s_beta",sys.name_.Data())));
-      _systematicVars.push_back(std::vector<var_t>());
+      _systematicVars.push_back(std::vector<var_t>()); //create an empty list of variables
       std::vector<var_t>& vars = _systematicVars.back();
+      //add a systematic variable for each process
       for(unsigned isource = 0; isource < _sources.size(); ++isource) {
         vars.push_back(var_t(Form("%s_%s_kappa", _sourceNames[isource].c_str(), sys.name_.Data())));
       }
     }
+
+    ///////////////////////////////////////////////////
     //Now configure the systematics
     for(unsigned index = 0; index < _systematics.size(); ++index) {
       var_t& sys = _systematics[index];
       std::string type = _systematicTypes[index];
       std::vector<double> values = _systematicValues[index];
 
-
+      //Create a normally distributed beta to control the uncertainty fluctuations
       var_t& beta = _systematicBetas[index];
       beta.nom_ = 0.; beta.val_ = 0.; beta.min_ = -10.; beta.max_ = 10.; beta.pdf_ = "Gauss"; beta.constant_ = false;
       if(_verbose > 5) {
@@ -388,15 +401,20 @@ namespace FCSys {
 
       //apply the effect to each source with the source specific size
       for(unsigned isource = 0; isource < _sources.size(); ++isource) {
-        var_t& source = _sources[isource];
-        double value = values[isource];
-        var_t& var = vars[isource];
+        var_t& source       = _sources[isource]; //process this systematic effects
+        const double value  = values[isource]; //nominal rate
+        var_t& var          = vars[isource]; //the systematic variable for this process
         if(_verbose > 6) std::cout << "Variable " << var.name_.Data() << " address = " << &var << std::endl;
         if(value == _NOEFFECT) continue; //does not effect this source
-        if(type == "lnN") {
+        if(type == "lnN") { //Log-normal
           var.nom_ = 1. + value; var.val_ = 1. + value; var.min_ = 0.; var.max_ = 1+10.*value;
           var.set_dependents({}, {}, {&beta});
           source.mul_.push_back(&var);
+        } else if(type == "Gaus") { //Gaussian
+          //source = nominal + sys; sys = Gaussian(mean = 0, width = uncertainty) = uncertainty*Gaussian(0, 1)
+          var.nom_ = 0.; var.val_ = 0.; var.min_ = -10.*value; var.max_ = 10.*value;
+          var.set_dependents({}, {&beta}, {});
+          source.add_.push_back(&var);
         } else {
           printf("ModelBuilder::%s: Error! Unknown uncertainty type %s for systematic %s", __func__, type.c_str(), sys.name_.Data());
           return 1;

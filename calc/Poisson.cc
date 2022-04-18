@@ -8,15 +8,20 @@ namespace FCSys {
         delete specMap_[spectator];
         specMap_[spectator] = 0;
       }
+      const double xmin = spectator->min_;
+      const double xmax = (spectator->nom_ > 1.e-5) ? std::min(20.*spectator->nom_, spectator->max_) : spectator->max_; //betas have nominal of 0, rest use 20*nominal
       specMap_[spectator] = new TH1D(Form("h%s", spectator->name_.Data()), Form("%s samples", spectator->name_.Data()),
-                                     specBins_, spectator->min_, spectator->max_);
+                                     specBins_, xmin, xmax);
     }
+    //FIXME: Set max to model related parameter
+    specMap_[mean_] = new TH1D("htotal_mean", "Total mean samples", specBins_, mean_->min_, 20.); //mean_->max_);
   }
 
   void Poisson_t::FillSpectators() {
     for(auto spectator : spec_) {
       specMap_[spectator]->Fill(spectator->get_val());
     }
+    specMap_[mean_]->Fill(GetMean());
   }
 
   double Poisson_t::GetMean() {
@@ -112,5 +117,9 @@ namespace FCSys {
       c->Print(Form("%s/c_%s.png", path, spectator->name_.Data()));
       delete c;
     }
+    TCanvas* c = new TCanvas();
+    specMap_[mean_]->Draw();
+    c->Print(Form("%s/c_total_mean.png", path));
+    delete c;
   }
 }

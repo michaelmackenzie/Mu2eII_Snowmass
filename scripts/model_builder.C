@@ -8,6 +8,7 @@ int model_builder(const char* file = "mu2eii/scripts/datacard.txt", bool print =
   if(status) return status;
   Poisson_t* model = builder.GetModel();
   cout << "- Retrieved the Poisson model!\n";
+  // if(print) model->specBins_ = 200;
 
   var_t& signal_mu = builder.GetPOI();
   TRandom3 rnd(90);
@@ -17,9 +18,10 @@ int model_builder(const char* file = "mu2eii/scripts/datacard.txt", bool print =
 
   //Generate the null hypothesis
   signal_mu.val_ = 0.;
-  cout << "- Null model mean = " << model->GetMean() << endl;
+  cout << "- Null model mean = " << model->GetMean();
   TH1D* hnull = model->GeneratePDF(rnd);
   hnull->SetName("hNullPdf");
+  cout << " with null PDF mean = " << hnull->GetMean() << endl;
 
   TCanvas* c = new TCanvas();
   hnull->SetLineWidth(2);
