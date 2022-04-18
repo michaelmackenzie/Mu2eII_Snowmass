@@ -19,10 +19,25 @@ rate               4.23637  3.90553e-02  4.74529e-02  1.11215e-02  1.01270e-02
 # rate                 4.17      0.039     0.047      0.011    0.010
 
 # Systematic uncertainties
-sys lumi     lnN     0.1          0.1         -          0.1           0.1  // Muon capture measurement uncertainty
+sys lumi     lnN      0.1          0.1         -          0.1           0.1  // Muon capture measurement uncertainty
 sys sig_norm lnN     0.04          -          -           -             -   // Mostly momentum scale
 sys dio_norm lnN      -           0.63        -           -             -   // Mostly momentum scale+resolution tail
-sys csm_norm lnN      -            -         0.2          -             -   // Cosmic flux normalization/time dependence
-sys rpc_norm lnN      -            -          -          0.29           -   // Pion/muon yield uncertainty
-sys pbr_norm lnN      -            -          -           -             1   // Pbar production uncertainty
+sys csm_norm lnN       -            -         0.2          -             -   // Cosmic flux normalization/time dependence
+sys rpc_norm lnN       -            -          -          0.29           -   // Pion/muon yield uncertainty
+sys pbr_norm lnN       -            -          -           -             1   // Pbar production uncertainty
 
+# results:
+#
+# Using lnN for all systematics:
+# - Null model mean = 0.107757 with null PDF mean = 0.117007
+# * Performing Feldman-Cousins calculation for median nseen = 0
+# ** For 0 seen, R_mue interval is: 0.000e+00 - 5.600e-01 **
+# * N(discovery) for NULL model = 6
+# ** For a median of 6, minimum R_mue is: 1.309e+00 **
+#
+# Using Gaus for all systematics:
+# - Null model mean = 0.107757 with null PDF mean = 0.109363
+# * Performing Feldman-Cousins calculation for median nseen = 0
+# ** For 0 seen, R_mue interval is: 0.000e+00 - 5.673e-01 **
+# * N(discovery) for NULL model = 5
+# ** For a median of 5, minimum R_mue is: 1.081e+00 **

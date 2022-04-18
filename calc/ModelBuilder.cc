@@ -86,6 +86,9 @@ namespace FCSys {
       }
       if(_verbose > 4) var.print();
       if(_verbose > 6) var.verbose_ = 0;
+      for(var_t* dep : var.add_) {
+        if(!std::count(spectators.begin(), spectators.end(), dep)) spectators.push_back(dep);
+      }
       for(var_t* dep : var.mul_) {
         if(!std::count(spectators.begin(), spectators.end(), dep)) spectators.push_back(dep);
       }
@@ -402,25 +405,32 @@ namespace FCSys {
       //apply the effect to each source with the source specific size
       for(unsigned isource = 0; isource < _sources.size(); ++isource) {
         var_t& source       = _sources[isource]; //process this systematic effects
-        const double value  = values[isource]; //nominal rate
+        const double value  = values[isource]; //size of the systematic
         var_t& var          = vars[isource]; //the systematic variable for this process
-        if(_verbose > 6) std::cout << "Variable " << var.name_.Data() << " address = " << &var << std::endl;
-        if(value == _NOEFFECT) continue; //does not effect this source
+        const double rate   = source.nom_; //nominal source rate
+        if(_verbose > 6) std::cout << "  Variable " << var.name_.Data() << " address = " << &var << std::endl;
+        if(value == _NOEFFECT) {
+          if(_verbose > 6) printf(" ModelBuilder::%s: Systematic %s not applied to source %s\n", __func__, var.name_.Data(), source.name_.Data());
+          continue; //does not effect this source
+        }
         if(type == "lnN") { //Log-normal
           var.nom_ = 1. + value; var.val_ = 1. + value; var.min_ = 0.; var.max_ = 1+10.*value;
           var.set_dependents({}, {}, {&beta});
           source.mul_.push_back(&var);
+          if(_verbose > 6) printf(" ModelBuilder::%s: Adding systematic %s to source %s with uncertainty %.3e%%\n", __func__, var.name_.Data(), source.name_.Data(), value);
         } else if(type == "Gaus") { //Gaussian
           //source = nominal + sys; sys = Gaussian(mean = 0, width = uncertainty) = uncertainty*Gaussian(0, 1)
-          var.nom_ = 0.; var.val_ = 0.; var.min_ = -10.*value; var.max_ = 10.*value;
+          const double uncertainty = value*rate; //absolute uncertainty
+          var.nom_ = uncertainty; var.val_ = uncertainty; var.min_ = -10.*uncertainty; var.max_ = 10.*uncertainty;
           var.set_dependents({}, {&beta}, {});
           source.add_.push_back(&var);
+          if(_verbose > 6) printf(" ModelBuilder::%s: Adding systematic %s to source %s with uncertainty %.3e\n", __func__, var.name_.Data(), source.name_.Data(), uncertainty);
         } else {
           printf("ModelBuilder::%s: Error! Unknown uncertainty type %s for systematic %s", __func__, type.c_str(), sys.name_.Data());
           return 1;
         }
         if(_verbose > 5) {
-          printf("ModelBuilder::%s: Creating systematic kappa for %s and source %s:\n", __func__, sys.name_.Data(), source.name_.Data());
+          printf(" ModelBuilder::%s: Initialized systematic kappa for %s and source %s:\n", __func__, sys.name_.Data(), source.name_.Data());
           var.print();
           source.print();
         }
